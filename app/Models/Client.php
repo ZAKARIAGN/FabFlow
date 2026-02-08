@@ -13,4 +13,10 @@ class Client extends Model
         "email",
         "tel"
     ];
+
+
+
+    public function document(){
+        return $this->hasMany(Document::class);
+    }
 }

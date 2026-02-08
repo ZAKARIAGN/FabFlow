@@ -20,11 +20,23 @@ class ProduitController extends Controller
     }
     public function store(Request $request)
     {
+
+        if ($request->type !== 'fabriqué') {
+            $request->merge(['stock' => 0]);
+        }
+
+
+
         $validator = Validator::make($request->all(), [
             "label" => "required|string|max:255",
             "type" => "required|in:fabriqué,opération,service",
             "prix" => "required|numeric|min:0",
-            "unite" => "required|string|max:255"
+            "unite" => "required|string|max:255",
+            "stock" => [
+                "required",
+                "numeric",
+                $request->type === 'fabriqué' ? "min:0" : "in:0"
+            ],
         ], [
             "label.required" => "Le libellé est obligatoire.",
             "label.string" => "Le libellé doit être une chaîne de caractères.",
@@ -37,6 +49,10 @@ class ProduitController extends Controller
             "unite.required" => "L'unité de mesure est obligatoire.",
             "unite.string" => "L'unité doit être une chaîne de caractères.",
             "unite.max" => "L'unité ne doit pas dépasser 255 caractères.",
+            "stock.required" => "Le stock est obligatoire.",
+            "stock.numeric" => "Le stock doit être un nombre valide",
+            "stock.in" => "Le stock doit être 0 pour les services ou opérations.",
+            "stock.min" => "Le stock ne peut pas être inférieur à 0.",
         ]);
 
 
@@ -49,11 +65,13 @@ class ProduitController extends Controller
 
 
 
+
         $produit = Produit::create([
             "label" => $request->label,
             "type" => $request->type,
             "prix" => $request->prix,
-            "unite" => $request->unite
+            "unite" => $request->unite,
+            "stock" => $request->type === "fabriqué" ? $request->stock : 0
         ]);
 
         return response()->json([
@@ -74,11 +92,20 @@ class ProduitController extends Controller
             ], 404);
         }
 
+        if ($request->type !== 'fabriqué') {
+            $request->merge(['stock' => 0]);
+        }
+
         $validator = Validator::make($request->all(), [
             "label" => "required|string|max:255",
             "type" => "required|in:fabriqué,opération,service",
             "prix" => "required|numeric|min:0",
-            "unite" => "required|string|max:255"
+            "unite" => "required|string|max:255",
+            "stock" => [
+                "required",
+                "numeric",
+                $request->type === 'fabriqué' ? "min:0" : "in:0"
+            ],
         ], [
             "label.required" => "Le libellé est obligatoire.",
             "label.string" => "Le libellé doit être une chaîne de caractères.",
@@ -91,6 +118,9 @@ class ProduitController extends Controller
             "unite.required" => "L'unité de mesure est obligatoire.",
             "unite.string" => "L'unité doit être une chaîne de caractères.",
             "unite.max" => "L'unité ne doit pas dépasser 255 caractères.",
+            "stock.required" => "Le stock est obligatoire.",
+            "stock.numeric" => "Le stock doit être un nombre valide",
+            "stock.min" => "Le stock ne peut pas être inférieur à 0.",
         ]);
 
         if ($validator->fails()) {
@@ -106,6 +136,7 @@ class ProduitController extends Controller
             "type" => $request->type,
             "prix" => $request->prix,
             "unite" => $request->unite,
+            "stock" => $request->type === 'fabriqué' ? $request->stock : 0,
         ]);
 
 
@@ -135,20 +166,21 @@ class ProduitController extends Controller
     }
 
 
-    public function search(Request $request){
-        $query = $request->query('q');
+    public function search(Request $request)
+    {
+        $query = trim($request->query('q'));
         if (empty($query)) {
-        return response()->json([
-            "status" => false,
-            "message" => "Veuillez saisir un terme de recherche"
-        ], 400);
-    }
+            return response()->json([
+                "status" => false,
+                "message" => "Veuillez saisir un terme de recherche"
+            ], 400);
+        }
         $produits = Produit::where('label', 'LIKE', "%{$query}%")
-                    ->get();
+            ->get();
         return response()->json([
-        "status" => true,
-        "produits" => $produits
-    ], 200);
+            "status" => true,
+            "produits" => $produits
+        ], 200);
     }
 
 

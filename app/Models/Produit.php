@@ -10,6 +10,14 @@ class Produit extends Model
         "label",
         "type",
         "prix",
-        "unite"
+        "unite",
+        "stock"
     ];
+
+
+
+
+    public function documentItems(){
+        return $this->hasMany(Document_item::class);
+    }
 }

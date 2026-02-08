@@ -12,6 +12,7 @@ class ClientController extends Controller
     {
         $validator = Validator::make($request->all(), [
             "company_name" => "required|string|max:255",
+            'vat_number' => 'nullable|string|max:255',
             "address" => "required|string|max:255",
             'email' => [
                 'required',
@@ -51,13 +52,11 @@ class ClientController extends Controller
             ], 422);
         }
 
-        $random_number = mt_rand(10000000, 99999999);
-
 
         $client = Client::create([
             "company_name" => $request->company_name,
             "address" => $request->address,
-            "vat_number" => $random_number,
+            "vat_number" => $request->vat_number,
             "email" => $request->email,
             "tel" => $request->tel
         ]);
@@ -160,24 +159,25 @@ class ClientController extends Controller
 
 
 
-    public function search(Request $request){
+    public function search(Request $request)
+    {
         $query = $request->query('q');
         if (empty($query)) {
-        return response()->json([
-            "status" => false,
-            "message" => "Veuillez saisir un terme de recherche"
-        ], 400);
-    }
+            return response()->json([
+                "status" => false,
+                "message" => "Veuillez saisir un terme de recherche"
+            ], 400);
+        }
 
         $clients = Client::where('company_name', 'LIKE', "%{$query}%")
-                    ->orWhere('vat_number', 'LIKE', "%{$query}%")
-                    ->get();
+            ->orWhere('vat_number', 'LIKE', "%{$query}%")
+            ->get();
 
 
         return response()->json([
-        "status" => true,
-        "clients" => $clients
-    ], 200);
+            "status" => true,
+            "clients" => $clients
+        ], 200);
     }
 
 }
