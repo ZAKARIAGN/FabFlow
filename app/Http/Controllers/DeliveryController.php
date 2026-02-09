@@ -15,6 +15,7 @@ class DeliveryController extends Controller
     public function store(Request $request, DocumentService $documentService, $quoteID)
     {
         $validator = Validator::make($request->all(), [
+            'totale' => 'required|numeric|min:0',
             'items' => 'required|array',
             'items.*.produit_id' => 'required|exists:produits,id',
             'items.*.qtte' => function ($attribute, $value, $fail) use ($request) {
@@ -31,15 +32,16 @@ class DeliveryController extends Controller
                 }
             },
         ], [
-            [
-                'items.required' => 'Vous devez ajouter au moins un article',
-                'items.array' => 'Les articles doivent être un tableau',
-                'items.*.produit_id.required' => 'Chaque article doit avoir un produit',
-                'items.*.produit_id.exists' => 'Le produit sélectionné n’existe pas',
-                'items.*.qtte.required' => 'La quantité est obligatoire',
-                'items.*.qtte.integer' => 'La quantité doit être un nombre entier',
-                'items.*.qtte.min' => 'La quantité doit être au moins 1',
-            ]
+            'totale.required' => 'Le champ totale est obligatoire.',
+            'totale.numeric' => 'Le champ totale doit être un nombre.',
+            'totale.min' => 'Le champ totale doit être supérieur ou égal à 0.',
+            'items.required' => 'Vous devez ajouter au moins un article',
+            'items.array' => 'Les articles doivent être un tableau',
+            'items.*.produit_id.required' => 'Chaque article doit avoir un produit',
+            'items.*.produit_id.exists' => 'Le produit sélectionné n’existe pas',
+            'items.*.qtte.required' => 'La quantité est obligatoire',
+            'items.*.qtte.integer' => 'La quantité doit être un nombre entier',
+            'items.*.qtte.min' => 'La quantité doit être au moins 1',
         ]);
 
         if ($validator->fails()) {
@@ -61,6 +63,7 @@ class DeliveryController extends Controller
                     'type' => 'delivery',
                     'number' => $documentService->generateNumber("delivery"),
                     'status' => 'livré',
+                    'totale' => $request->totale,
                     'client_id' => $quote->client_id,
                     'parent_id' => $quote->id
                 ]);
@@ -93,8 +96,14 @@ class DeliveryController extends Controller
                         }
 
                         $qtteToInsert = $userQtte;
-                        $produit->decrement('stock', $userQtte);
-                        $quoteItem->decrement('qtte', $userQtte);
+                        if ($delivery->status === 'livré') {
+                            $produit->decrement('stock', $userQtte);
+                            $quoteItem->decrement('qtte', $userQtte);
+                        } elseif ($delivery->status === 'annulé') {
+                            $produit->increment('stock', $userQtte);
+                            $quoteItem->increment('qtte', $userQtte);
+
+                        }
                     }
 
                     $delivery->items()->create([
@@ -152,7 +161,7 @@ class DeliveryController extends Controller
             ->get();
         return response()->json([
             "status" => true,
-            "deliveries" => $deliveries
+            "deliveries" => $deliveries->load(["client", "items.produit"])
         ], 200);
     }
 
@@ -173,7 +182,7 @@ class DeliveryController extends Controller
             ->get();
         return response()->json([
             "status" => true,
-            "deliveries" => $deliveries
+            "deliveries" => $deliveries->load(["client", "items.produit"])
         ], 200);
     }
 

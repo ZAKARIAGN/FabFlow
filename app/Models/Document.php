@@ -11,7 +11,8 @@ class Document extends Model
         "number",
         "status",
         "client_id",
-        "parent_id"
+        "parent_id",
+        "totale"
     ];
 
 

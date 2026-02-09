@@ -21,6 +21,7 @@ class InvoiceController extends Controller
                     'number' => $documentService->generateNumber("invoice"),
                     'status' => 'en_attente',
                     'client_id' => $bl->client_id,
+                    'totale'=>$bl->totale,
                     'parent_id' => $bl->id,
                 ]);
 
@@ -80,7 +81,7 @@ class InvoiceController extends Controller
             ->get();
         return response()->json([
             "status" => true,
-            "invoices" => $invoices
+            "invoices" => $invoices->load(["client","items.produit"])
         ], 200);
     }
     public function getAllInvoices()

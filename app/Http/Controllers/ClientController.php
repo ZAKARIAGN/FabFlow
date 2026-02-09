@@ -12,7 +12,7 @@ class ClientController extends Controller
     {
         $validator = Validator::make($request->all(), [
             "company_name" => "required|string|max:255",
-            'vat_number' => 'nullable|string|max:255',
+            'vat_number' => 'nullable|string|max:255|unique:clients,vat_number',
             "address" => "required|string|max:255",
             'email' => [
                 'required',
@@ -42,6 +42,9 @@ class ClientController extends Controller
             "tel.required" => "Le numéro de téléphone est obligatoire.",
             "tel.regex" => "Le format du numéro de téléphone est invalide.",
             "tel.min" => "Le numéro de téléphone doit contenir au moins 10 chiffres.",
+            'vat_number.string' => 'Le numéro de TVA doit être une chaîne de caractères.',
+            'vat_number.max' => 'Le numéro de TVA ne peut pas dépasser 255 caractères.',
+            'vat_number.unique' => 'Ce numéro de TVA est déjà utilisé.',
         ]);
 
 
@@ -91,6 +94,7 @@ class ClientController extends Controller
         }
         $validator = Validator::make($request->all(), [
             "company_name" => "required|string|max:255",
+            'vat_number' => 'nullable|string|max:255|unique:clients,vat_number,' . $id,
             "address" => "required|string|max:255",
             'email' => [
                 'required',
@@ -114,6 +118,9 @@ class ClientController extends Controller
             "address.max" => "L'adresse ne doit pas dépasser 255 caractères.",
             "email.unique" => "Cet email est déjà utilisé par un autre client.",
             "tel.regex" => "Le format du téléphone est invalide.",
+            'vat_number.string' => 'Le numéro de TVA doit être une chaîne de caractères.',
+            'vat_number.max' => 'Le numéro de TVA ne peut pas dépasser 255 caractères.',
+            'vat_number.unique' => 'Ce numéro de TVA est déjà utilisé par un autre client.'
         ]);
 
         if ($validator->fails()) {
@@ -126,9 +133,11 @@ class ClientController extends Controller
 
         $client->update([
             "company_name" => $request->company_name,
+            "vat_number" => $request->vat_number,
             "address" => $request->address,
             "email" => $request->email,
             "tel" => $request->tel,
+
         ]);
 
         return response()->json([

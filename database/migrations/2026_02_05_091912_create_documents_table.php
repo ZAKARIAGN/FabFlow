@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string("number");
             $table->string("status");
             $table->foreignId("client_id")->constrained("clients")->onDelete("cascade");
+            $table->decimal("totale",10,2);
             $table->foreignId('parent_id')->nullable()->constrained('documents')->nullOnDelete();   
             $table->timestamps();
         });

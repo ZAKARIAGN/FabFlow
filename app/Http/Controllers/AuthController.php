@@ -116,7 +116,7 @@ class AuthController extends Controller
         ];
 
         if ($user->role && $user->role->roleName === "admin") {
-            $redirect = "/admin/dashboard";
+            $redirect = "/admin/dashboard"; 
         } else if ($user->role && $user->role->roleName === "commercial") {
             $redirect = "/commercial/dashboard";
         } else if ($user->role && $user->role->roleName === "atelier") {

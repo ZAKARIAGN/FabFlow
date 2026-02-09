@@ -17,6 +17,7 @@ class QuoteController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'client_id' => 'required|exists:clients,id',
+            'totale' => 'required|numeric|min:0',
             'items' => 'required|array|min:1',
             "items.*.produit_id" => "required|exists:produits,id",
             "items.*.qtte" => function ($attribute, $value, $fail) use ($request) {
@@ -34,8 +35,9 @@ class QuoteController extends Controller
             },
             "items.*.tax_rate" => "required|integer|min:0"
         ], [
-            'type.required' => 'Le type de document est obligatoire.',
-            'type.in' => 'Le type doit être "quote", "delivery" ou "invoice".',
+            'totale.required' => 'Le champ totale est obligatoire.',
+            'totale.numeric' => 'Le champ totale doit être un nombre.',
+            'totale.min' => 'Le champ totale doit être supérieur ou égal à 0.',
             'client_id.required' => 'Le client est obligatoire.',
             'client_id.exists' => 'Le client sélectionné n’existe pas.',
             'items.required' => 'Vous devez ajouter au moins un article.',
@@ -52,7 +54,10 @@ class QuoteController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                "status" => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
 
 
@@ -63,6 +68,7 @@ class QuoteController extends Controller
                     'number' => $documentService->generateNumber("quote"),
                     'status' => 'validé',
                     'client_id' => $request->client_id,
+                    'totale'=>$request->totale,
                     'parent_id' => null
                 ]);
 
@@ -97,6 +103,7 @@ class QuoteController extends Controller
 
         $validator = Validator::make($request->all(), [
             'client_id' => 'required|exists:clients,id',
+            'totale' => 'required|numeric|min:0',
             'items' => 'required|array|min:1',
             "items.*.produit_id" => "required|exists:produits,id",
             "items.*.qtte" => function ($attribute, $value, $fail) use ($request) {
@@ -114,6 +121,9 @@ class QuoteController extends Controller
             },
             "items.*.tax_rate" => "required|integer|min:0"
         ], [
+            'totale.required' => 'Le champ totale est obligatoire.',
+            'totale.numeric' => 'Le champ totale doit être un nombre.',
+            'totale.min' => 'Le champ totale doit être supérieur ou égal à 0.',
             'client_id.required' => 'Le client est obligatoire.',
             'client_id.exists' => 'Le client sélectionné n’existe pas.',
             'items.required' => 'Vous devez ajouter au moins un article.',
@@ -140,7 +150,8 @@ class QuoteController extends Controller
             return DB::transaction(function () use ($request, $quote) {
 
                 $quote->update([
-                    "client_id" => $request->client_id
+                    "client_id" => $request->client_id,
+                    'totale'=>$request->totale,
                 ]);
 
                 $quote->items()->delete();
@@ -211,7 +222,7 @@ class QuoteController extends Controller
             ->get();
         return response()->json([
             "status" => true,
-            "quotes" => $quotes
+            "quotes" => $quotes->load(['client', 'items.produit'])
         ], 200);
     }
 
@@ -232,7 +243,7 @@ class QuoteController extends Controller
             ->get();
         return response()->json([
             "status" => true,
-            "quotes" => $quotes
+            "quotes" => $quotes->load(["client", "items.produit"])
         ], 200);
     }
 
