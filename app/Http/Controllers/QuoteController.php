@@ -68,14 +68,14 @@ class QuoteController extends Controller
                     'number' => $documentService->generateNumber("quote"),
                     'status' => 'validé',
                     'client_id' => $request->client_id,
-                    'totale'=>$request->totale,
+                    'totale' => $request->totale,
                     'parent_id' => null
                 ]);
 
                 foreach ($request->items as $itemData) {
                     $produit = Produit::findOrFail($itemData['produit_id']);
 
-                    $qtteToInsert = $produit->type === "fabriqué" ? $itemData["qtte"] : 0;
+                    $qtteToInsert = $produit->type === "fabriqué" ? $itemData["qtte"] : 1;
 
                     $quote->items()->create([
                         'produit_id' => $produit->id,
@@ -85,7 +85,15 @@ class QuoteController extends Controller
                     ]);
                 }
 
-                return response()->json(['status' => true, 'document' => $quote->load('client', 'items.produit')], 201);
+                $user = auth()->user();
+
+                if ($user->role && $user->role->roleName === "admin") {
+                    $redirect = "/admin/documents";
+                } else if ($user->role && $user->role->roleName === "commercial") {
+                    $redirect = "/commercial/devis";
+                }
+
+                return response()->json(['status' => true, 'document' => $quote->load('client', 'items.produit'), 'redirect_to' => $redirect], 201);
             });
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
@@ -151,14 +159,14 @@ class QuoteController extends Controller
 
                 $quote->update([
                     "client_id" => $request->client_id,
-                    'totale'=>$request->totale,
+                    'totale' => $request->totale,
                 ]);
 
                 $quote->items()->delete();
 
                 foreach ($request->items as $itemData) {
                     $produit = Produit::findOrFail($itemData['produit_id']);
-                    $qtteToInsert = $produit->type === "fabriqué" ? $itemData["qtte"] : 0;
+                    $qtteToInsert = $produit->type === "fabriqué" ? $itemData["qtte"] : 1;
 
                     $quote->items()->create([
                         'produit_id' => $produit->id,
@@ -168,10 +176,19 @@ class QuoteController extends Controller
                     ]);
                 }
 
+                $user = auth()->user();
+
+                if ($user->role && $user->role->roleName === "admin") {
+                    $redirect = "/admin/documents";
+                } else if ($user->role && $user->role->roleName === "commercial") {
+                    $redirect = "/commercial/devis";
+                }
+
                 return response()->json([
                     'status' => true,
                     'message' => 'Document mis à jour avec succès',
-                    'document' => $quote->load(['client', 'items.produit'])
+                    'document' => $quote->load(['client', 'items.produit']),
+                    'redirect_to'=>$redirect
                 ], 200);
             });
 
@@ -248,18 +265,6 @@ class QuoteController extends Controller
     }
 
 
-
-
-    public function index()
-    {
-        $documents = Document::with(['client', 'items.produit'])->where("type", "quote")->get();
-        return response()->json([
-            'status' => true,
-            "documents" => $documents
-        ]);
-    }
-
-
     public function getAllQuotes()
     {
         $quotes = Document::where("type", "quote")->with(['client', "items.produit"])->get();
@@ -277,5 +282,50 @@ class QuoteController extends Controller
             'status' => true,
             "quotes" => $quotes
         ]);
+    }
+
+
+    public function index()
+    {
+        $documents = Document::with(['client', 'items.produit'])->get();
+        return response()->json([
+            'status' => true,
+            "documents" => $documents
+        ]);
+    }
+
+    public function show($id)
+    {
+        $document = Document::find($id);
+
+        if (!$document) {
+            return response()->json([
+                'status' => false,
+                'message' => "Produit introuvable"
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'document' => $document->load(['client', 'items.produit'])
+        ], 200);
+    }
+
+
+    public function searchDocument(Request $request)
+    {
+        $query = trim($request->query('q'));
+        if (empty($query)) {
+            return response()->json([
+                "status" => false,
+                "message" => "Veuillez saisir un terme de recherche"
+            ], 400);
+        }
+        $quotes = Document::where('number', 'LIKE', "%{$query}%")
+            ->get();
+        return response()->json([
+            "status" => true,
+            "documents" => $quotes->load(['client', 'items.produit'])
+        ], 200);
     }
 }

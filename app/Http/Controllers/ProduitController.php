@@ -184,4 +184,22 @@ class ProduitController extends Controller
     }
 
 
+    public function show($id)
+{
+    $produit = Produit::find($id);
+
+    if (!$produit) {
+        return response()->json([
+            'status' => false,
+            'message' => "Produit introuvable"
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => true,
+        'produit' => $produit
+    ], 200);
+}
+
+
 }

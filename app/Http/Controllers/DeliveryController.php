@@ -78,10 +78,10 @@ class DeliveryController extends Controller
                         throw new \Exception("Le produit {$produit->label} n'existe pas dans le devis d'origine.");
                     }
 
-                    $qtteToInsert = 0;
+                    $qtteToInsert = 1;
 
                     if ($produit->type === "fabriqué") {
-                        $userQtte = $itemData['qtte'] ?? 0;
+                        $userQtte = $itemData['qtte'] ?? 1;
 
                         if ($userQtte < 1) {
                             throw new \Exception("La quantité est obligatoire pour le produit fabriqué {$produit->label}.");
@@ -130,21 +130,50 @@ class DeliveryController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        $delivery = Document::findOrFail($id);
+        $delivery = Document::with('items.produit', 'parent.items')->findOrFail($id);
         $request->validate([
             'status' => ['required', Rule::in(['livré', 'annulé'])]
         ]);
 
-        $delivery->update([
-            "status" => $request->status
-        ]);
+        $oldStatus = $delivery->status;
+        $newStatus = $request->status;
 
+        if ($oldStatus === $newStatus) {
+            return response()->json([
+                "status" => true,
+                'message' => 'Le statut est déjà ' . $newStatus
+            ]);
+        }
+
+        DB::transaction(function () use ($delivery, $newStatus, $oldStatus) {
+            foreach ($delivery->items as $item) {
+                $produit = $item->produit;
+                $quoteItem = $delivery->parent->items->firstWhere('produit_id', $produit->id);
+
+                if ($produit->type === 'fabriqué') {
+                    if ($oldStatus === 'livré' && $newStatus === 'annulé') {
+                        $produit->increment('stock', $item->qtte);
+                        $quoteItem->increment('qtte', $item->qtte);
+                    } elseif ($oldStatus === 'annulé' && $newStatus === 'livré') {
+                        if ($produit->stock < $item->qtte) {
+                            throw new \Exception("Stock insuffisant pour {$produit->label}");
+                        }
+                        $produit->decrement('stock', $item->qtte);
+                        $quoteItem->decrement('qtte', $item->qtte);
+                    }
+                }
+            }
+
+            // Update status
+            $delivery->update(['status' => $newStatus]);
+        });
 
         return response()->json([
             "status" => true,
-            'message' => 'Statut mis à jour vers ' . $request->status
+            'message' => 'Statut mis à jour vers ' . $newStatus
         ]);
     }
+
 
 
     public function search(Request $request)

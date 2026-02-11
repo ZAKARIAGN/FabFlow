@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -189,4 +190,42 @@ class ClientController extends Controller
         ], 200);
     }
 
+
+public function show($id)
+{
+    $client = Client::find($id);
+
+    if (!$client) {
+        return response()->json([
+            'status' => false,
+            'message' => "Client introuvable"
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => true,
+        'client' => $client
+    ], 200);
 }
+
+public function topClientsByPaidInvoices()
+{
+    $clients = Client::select('clients.*', DB::raw('SUM(documents.totale) as total_paid'))
+        ->join('documents', 'documents.client_id', '=', 'clients.id')
+        ->where('documents.type', 'invoice')
+        ->where('documents.status', 'payée')
+        ->groupBy('clients.id')
+        ->orderByDesc('total_paid')
+        ->limit(5)
+        ->get();
+
+    return response()->json([
+        'status' => true,
+        'top_clients' => $clients
+    ]);
+}
+
+
+}
+
+

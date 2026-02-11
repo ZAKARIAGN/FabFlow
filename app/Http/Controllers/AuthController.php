@@ -116,7 +116,7 @@ class AuthController extends Controller
         ];
 
         if ($user->role && $user->role->roleName === "admin") {
-            $redirect = "/admin/dashboard"; 
+            $redirect = "/admin/dashboard";
         } else if ($user->role && $user->role->roleName === "commercial") {
             $redirect = "/commercial/dashboard";
         } else if ($user->role && $user->role->roleName === "atelier") {
@@ -131,5 +131,35 @@ class AuthController extends Controller
             'message' => "login successful",
             'redirect_to' => $redirect
         ], 200);
+    }
+
+
+
+
+    public function Users()
+    {
+        $users = User::get();
+        return response()->json([
+            "status" => false,
+            "users" => $users
+        ]);
+    }
+
+    public function deleteUser($id)
+    {
+        $user = User::findOrFail($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => "user introuvable"
+            ], 404);
+        }
+        ;
+
+        $user->delete();
+        return response()->json([
+            "status" => true,
+            "message" => "utilisateur supprimé avec succés"
+        ]);
     }
 }

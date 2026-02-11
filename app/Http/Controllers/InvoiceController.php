@@ -21,7 +21,7 @@ class InvoiceController extends Controller
                     'number' => $documentService->generateNumber("invoice"),
                     'status' => 'en_attente',
                     'client_id' => $bl->client_id,
-                    'totale'=>$bl->totale,
+                    'totale' => $bl->totale,
                     'parent_id' => $bl->id,
                 ]);
 
@@ -81,7 +81,7 @@ class InvoiceController extends Controller
             ->get();
         return response()->json([
             "status" => true,
-            "invoices" => $invoices->load(["client","items.produit"])
+            "invoices" => $invoices->load(["client", "items.produit"])
         ], 200);
     }
     public function getAllInvoices()
@@ -90,6 +90,19 @@ class InvoiceController extends Controller
         return response()->json([
             'status' => true,
             "invoices" => $invoices
+        ]);
+    }
+
+
+    public function getTotalPaidInvoices()
+    {
+        $total = Document::where('type', 'invoice')
+            ->where('status', 'payée')
+            ->sum('totale');
+
+        return response()->json([
+            'status' => true,
+            'total_paid_invoices' => $total
         ]);
     }
 
