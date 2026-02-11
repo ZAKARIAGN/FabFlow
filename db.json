@@ -1,0 +1,255 @@
+{
+  "user": [
+    {
+      "id": "1",
+      "email": "admin1@fabflow.ma",
+      "password": "123",
+      "role": "admin"
+    },
+    {
+      "id": "2",
+      "email": "admin2@fabflow.ma",
+      "password": "1234",
+      "role": "admin"
+    },
+    {
+      "id": "3",
+      "email": "commercial@fabflow.ma",
+      "password": "12345",
+      "role": "commercial"
+    },
+    {
+      "id": "4",
+      "email": "atelier@fabflow.ma",
+      "password": "123456",
+      "role": "atelier"
+    },
+    {
+      "id": "5",
+      "email": "comptable@fabflow.ma",
+      "password": "1234567",
+      "role": "comptable"
+    }
+  ],
+  "clients": [
+    {
+      "vat_number": "13912318391",
+      "company_name": "aymen",
+      "address": "casa",
+      "email": "aymen@gmail.com",
+      "tel": "0627231813",
+      "id": "2ec4"
+    },
+    {
+      "id": "ed8d",
+      "vat_number": "13912318391",
+      "company_name": "asada",
+      "address": "casa",
+      "email": "asad@gmail.com",
+      "tel": "0627231813"
+    }
+  ],
+  "produits": [
+    {
+      "id": "a8c2",
+      "label": "iphone",
+      "type": "Fabriqué",
+      "prix": "10000",
+      "unite": "piece",
+      "stock": "1000"
+    },
+    {
+      "id": "f9a0",
+      "label": "pc",
+      "type": "Fabriqué",
+      "prix": "21000",
+      "unite": "piece",
+      "stock": "100"
+    },
+    {
+      "id": "7d03",
+      "label": "asjkda",
+      "type": "Opération",
+      "prix": "100",
+      "unite": "",
+      "stock": 0
+    },
+    {
+      "id": "37df",
+      "label": "sak",
+      "type": "Opération",
+      "prix": "10000",
+      "unite": "",
+      "stock": 0
+    }
+  ],
+  "documents": [
+    {
+      "id": "sodak",
+      "quotes": [
+        {
+          "id": "0a4b",
+          "type": "quote",
+          "number": "dev-2026-0001",
+          "status": "validé",
+          "client_id": "2ec4",
+          "parent_id": null,
+          "created_at": "2026-02-12",
+          "client": {
+            "id": "2ec4",
+            "company_name": "aymen",
+            "address": "casa",
+            "vat_number": "13912318391",
+            "email": "aymen@gmail.com",
+            "tel": "0627231813",
+            "created_at": "2026-02-12"
+          },
+          "items": [
+            {
+              "id": 1,
+              "qtte": 10,
+              "unit_price": 10000,
+              "tax_rate": 20,
+              "produits_id": "a8c2",
+              "document_id": 1,
+              "created_at": "2026-02-12",
+              "produit": {
+                "id": "a8c2",
+                "label": "iphone",
+                "type": "Fabriqué",
+                "prix": "10000",
+                "stock": "1000",
+                "unite": "piece"
+              }
+            }
+          ],
+          "totale": 624000
+        }
+      ]
+    },
+    {
+      "id": "kazb",
+      "quotes": [
+        {
+          "id": "fgak",
+          "type": "quote",
+          "number": "dev-2026-1794",
+          "status": "annulé",
+          "client_id": "2ec4",
+          "parent_id": null,
+          "created_at": "2026-02-08",
+          "client": {
+            "vat_number": "13912318391",
+            "company_name": "aymen",
+            "address": "casa",
+            "email": "aymen@gmail.com",
+            "tel": "0627231813",
+            "id": "2ec4"
+          },
+          "items": [
+            {
+              "produits_id": "a8c2",
+              "qtte": 1,
+              "unit_price": 10000,
+              "tax_rate": 20
+            },
+            {
+              "produits_id": "f9a0",
+              "qtte": 1,
+              "unit_price": 21000,
+              "tax_rate": 20
+            },
+            {
+              "produits_id": "a8c2",
+              "qtte": 4,
+              "unit_price": 10000,
+              "tax_rate": 10
+            }
+          ],
+          "totale": 81200
+        }
+      ]
+    },
+    {
+      "id": "idao",
+      "invoices": [
+        {
+          "id": "fgak",
+          "type": "invoice",
+          "number": "dev-2026-1794",
+          "status": "en_attente",
+          "client_id": "2ec4",
+          "parent_id": "kazb",
+          "created_at": "2026-02-08",
+          "client": {
+            "vat_number": "13912318391",
+            "company_name": "aymen",
+            "address": "casa",
+            "email": "aymen@gmail.com",
+            "tel": "0627231813",
+            "id": "2ec4"
+          },
+          "items": [
+            {
+              "produits_id": "a8c2",
+              "qtte": 1,
+              "unit_price": 10000,
+              "tax_rate": 20
+            }
+          ],
+          "totale": 12000
+        }
+      ]
+    },
+    {
+      "id": "ijsoda",
+      "deliveries": [
+        {
+          "id": "del-1770642275608",
+          "type": "delivery",
+          "number": "BL-2026-0001",
+          "status": "livré",
+          "client_id": "2ec4",
+          "client": {
+            "id": "2ec4",
+            "company_name": "aymen",
+            "address": "casa",
+            "vat_number": "13912318391",
+            "email": "aymen@gmail.com",
+            "tel": "0627231813",
+            "created_at": "2026-02-12"
+          },
+          "created_at": "2026-02-09",
+          "items": [
+            {
+              "id": 1,
+              "qtte": 10,
+              "unit_price": 10000,
+              "tax_rate": 20,
+              "produits_id": "a8c2",
+              "document_id": 1,
+              "created_at": "2026-02-12",
+              "produit": {
+                "id": "a8c2",
+                "label": "iphone",
+                "type": "Fabriqué",
+                "prix": "10000",
+                "stock": "1000",
+                "unite": "piece"
+              }
+            }
+          ],
+          "totale": 100000
+        }
+      ]
+    },
+    {
+      "status": "payée"
+    },
+    {
+      "id": "eeee",
+      "delivery_id": "del-1770642275608",
+      "status": "payée"
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { GetProduitById, UpdateProduitByID } from "../services/ProduitService";
+import ErrMsg from "../compenet/ErrMsg";
+
+const UpdateProduit = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+  const [produitsInfo, setProduitsInfo] = useState({
+    label: "",
+    type: "",
+    prix: "",
+    unite: "",
+    stock: "",
+  });
+
+  const [errMsg, setErrMsg] = useState({});
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await GetProduitById(id, setErrMsg, navigate);
+        setProduitsInfo(data);
+      } catch (err) {
+        console.error("Erreur fetch:", err);
+      }
+    };
+    fetchData();
+  }, [id]);
+
+  const HandleChange = (e) => {
+    setProduitsInfo({
+      ...produitsInfo,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setErrMsg({});
+    await UpdateProduitByID(produitsInfo, setErrMsg, navigate);
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-xl border border-[#90b4ce]/20 shadow-sm">
+      <h2 className="text-lg font-bold text-[#094067] mb-6 border-b pb-2">
+        Update Produit / Service
+      </h2>
+
+      <form className="space-y-4" onSubmit={handleUpdate}>
+        {/* Désignation */}
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+            Désignation
+          </label>
+          <input
+            value={produitsInfo.label}
+            onChange={HandleChange}
+            name="label"
+            type="text"
+            className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+          />
+          <ErrMsg msg={errMsg.errors?.label?.[0]} />
+        </div>
+
+        {/* Type */}
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+            Type
+          </label>
+          <select
+            onChange={HandleChange}
+            value={produitsInfo.type}
+            name="type"
+            className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+          >
+            <option value="">Choisir le type</option>
+            <option value="fabriqué">Fabriqué</option>
+            <option value="opération">Opération</option>
+            <option value="service">Service</option>
+          </select>
+          <ErrMsg msg={errMsg.errors?.type?.[0]} />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Prix */}
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+              Prix
+            </label>
+            <input
+              onChange={HandleChange}
+              value={produitsInfo.prix}
+              name="prix"
+              type="number"
+              className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+            />
+            <ErrMsg msg={errMsg.errors?.prix?.[0]} />
+          </div>
+
+          {/* Stock */}
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+              Stock
+            </label>
+            <input
+              onChange={HandleChange}
+              value={produitsInfo.stock}
+              name="stock"
+              type="number"
+              disabled={produitsInfo.type !== "fabriqué"}
+              className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm disabled:bg-gray-100"
+            />
+            <ErrMsg msg={errMsg.errors?.stock?.[0]} />
+          </div>
+
+          {/* Unité */}
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+              Unité
+            </label>
+            <select
+              onChange={HandleChange}
+              value={produitsInfo.unite}
+              name="unite"
+              className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+            >
+              <option value="">Choisir une unité</option>
+              <option value="Pièce">Pièce</option>
+              <option value="Heure">Heure</option>
+              <option value="Mètre">Mètre</option>
+              <option value="Kg">Kg</option>
+            </select>
+            <ErrMsg msg={errMsg.errors?.unite?.[0]} />
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <Link
+            to="/admin/produits"
+            className="px-6 py-2 text-[#5f6c7b] hover:bg-gray-100 rounded-lg"
+          >
+            Annuler
+          </Link>
+          <button
+            type="submit"
+            className="px-6 py-2 bg-[#3da9fc] text-white font-bold rounded-lg hover:bg-[#094067]"
+          >
+            Update
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default UpdateProduit;
