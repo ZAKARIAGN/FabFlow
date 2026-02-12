@@ -16,9 +16,21 @@ class InvoiceController extends Controller
             return DB::transaction(function () use ($blId, $documentService) {
                 $bl = Document::with('items.produit', 'client')->findOrFail($blId);
 
+                if ($bl->type !== 'delivery') {
+                    throw new \Exception("Ce document n'est pas un bon de livraison");
+                }
+
+                if ($bl->status !== 'livré') {
+                    throw new \Exception("Le bon de livraison doit être livré pour générer une facture");
+                }
+
+                // Générer le numéro avec le même shared_id que le BL
+                $numberData = $documentService->generateNumberFromParent("invoice", $bl);
+
                 $invoice = Document::create([
                     'type' => 'invoice',
-                    'number' => $documentService->generateNumber("invoice"),
+                    'number' => $numberData['number'],
+                    'shared_id' => $numberData['shared_id'],
                     'status' => 'en_attente',
                     'client_id' => $bl->client_id,
                     'totale' => $bl->totale,
@@ -48,7 +60,6 @@ class InvoiceController extends Controller
         }
     }
 
-
     public function updateInvoiceStatus(Request $request, $invoiceID)
     {
         $invoice = Document::where('type', 'invoice')->findOrFail($invoiceID);
@@ -56,6 +67,7 @@ class InvoiceController extends Controller
         $request->validate([
             'status' => ['required', Rule::in(['payée', 'en_attente'])]
         ]);
+        
         $invoice->update([
             'status' => $request->status
         ]);
@@ -76,7 +88,10 @@ class InvoiceController extends Controller
                 "message" => "Veuillez saisir un terme de recherche"
             ], 400);
         }
-        $invoices = Document::where('number', 'LIKE', "%{$query}%")
+        $invoices = Document::where(function ($q) use ($query) {
+            $q->where('number', 'LIKE', "%{$query}%")
+                ->orWhere('shared_id', 'LIKE', "%{$query}%");
+        })
             ->where("type", "invoice")
             ->get();
         return response()->json([
@@ -84,6 +99,7 @@ class InvoiceController extends Controller
             "invoices" => $invoices->load(["client", "items.produit"])
         ], 200);
     }
+
     public function getAllInvoices()
     {
         $invoices = Document::where("type", "invoice")->with(['client', "items.produit"])->get();
@@ -92,7 +108,6 @@ class InvoiceController extends Controller
             "invoices" => $invoices
         ]);
     }
-
 
     public function getTotalPaidInvoices()
     {
@@ -106,9 +121,27 @@ class InvoiceController extends Controller
         ]);
     }
 
+    /**
+     * Récupérer tous les documents liés par shared_id
+     */
+    public function getRelatedDocuments($sharedId)
+    {
+        $documents = Document::where('shared_id', $sharedId)
+            ->with(['client', 'items.produit'])
+            ->orderBy('created_at', 'asc')
+            ->get();
 
+        if ($documents->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Aucun document trouvé avec cet identifiant'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'shared_id' => $sharedId,
+            'documents' => $documents
+        ]);
+    }
 }
-
-
-
-

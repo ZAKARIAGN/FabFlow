@@ -60,7 +60,7 @@ class ProduitController extends Controller
             return response()->json([
                 "status" => false,
                 "errors" => $validator->errors()
-            ]);
+            ],422);
         }
 
 
@@ -74,9 +74,18 @@ class ProduitController extends Controller
             "stock" => $request->type === "fabriqué" ? $request->stock : 0
         ]);
 
+        $user = auth()->user();
+
+        if ($user->role && $user->role->roleName === "admin") {
+            $redirect = "/admin/produits";
+        } else if ($user->role && $user->role->roleName === "commercial") {
+            $redirect = "/commercial/produits";
+        }
+
         return response()->json([
             "status" => true,
             "message" => "Produit créé avec succès",
+            "redirect_to" => $redirect,
             "produit" => $produit
         ]);
     }
@@ -127,7 +136,7 @@ class ProduitController extends Controller
             return response()->json([
                 "status" => false,
                 "errors" => $validator->errors()
-            ]);
+            ],422);
         }
 
 
@@ -140,8 +149,18 @@ class ProduitController extends Controller
         ]);
 
 
+        $user = auth()->user();
+
+        if ($user->role && $user->role->roleName === "admin") {
+            $redirect = "/admin/produits";
+        } else if ($user->role && $user->role->roleName === "commercial") {
+            $redirect = "/commercial/produits";
+        }
+
+
         return response()->json([
             "status" => true,
+            "redirect_to" => $redirect,
             'message' => "Le produit a été mis à jour avec succès.",
             "produit" => $produit
         ]);
@@ -185,21 +204,21 @@ class ProduitController extends Controller
 
 
     public function show($id)
-{
-    $produit = Produit::find($id);
+    {
+        $produit = Produit::find($id);
 
-    if (!$produit) {
+        if (!$produit) {
+            return response()->json([
+                'status' => false,
+                'message' => "Produit introuvable"
+            ], 404);
+        }
+
         return response()->json([
-            'status' => false,
-            'message' => "Produit introuvable"
-        ], 404);
+            'status' => true,
+            'produit' => $produit
+        ], 200);
     }
-
-    return response()->json([
-        'status' => true,
-        'produit' => $produit
-    ], 200);
-}
 
 
 }

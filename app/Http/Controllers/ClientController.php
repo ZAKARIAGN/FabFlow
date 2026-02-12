@@ -20,7 +20,7 @@ class ClientController extends Controller
                 'string',
                 'email',
                 'max:255',
-                'unique:users,email',
+                'unique:clients,email',
                 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'
             ],
             'tel' => [
@@ -65,9 +65,18 @@ class ClientController extends Controller
             "tel" => $request->tel
         ]);
 
+        $user = auth()->user();
+
+        if ($user->role && $user->role->roleName === "admin") {
+            $redirect = "/admin/clients";
+        } else if ($user->role && $user->role->roleName === "commercial") {
+            $redirect = "/commercial/clients";
+        }
+
         return response()->json([
             "status" => true,
             "message" => "Client créé avec succès",
+            "redirect_to" => $redirect,
             "client" => $client
         ], 201);
     }
@@ -128,7 +137,7 @@ class ClientController extends Controller
             return response()->json([
                 "status" => false,
                 "errors" => $validator->errors()
-            ]);
+            ], 422);
         }
 
 
@@ -141,9 +150,18 @@ class ClientController extends Controller
 
         ]);
 
+        $user = auth()->user();
+
+        if ($user->role && $user->role->roleName === "admin") {
+            $redirect = "/admin/clients";
+        } else if ($user->role && $user->role->roleName === "commercial") {
+            $redirect = "/commercial/clients";
+        }
+
         return response()->json([
             'status' => true,
             'message' => "Le client a été mis à jour avec succès.",
+            "redirect_to" => $redirect,
             'client' => $client
         ], 200);
     }
@@ -191,39 +209,39 @@ class ClientController extends Controller
     }
 
 
-public function show($id)
-{
-    $client = Client::find($id);
+    public function show($id)
+    {
+        $client = Client::find($id);
 
-    if (!$client) {
+        if (!$client) {
+            return response()->json([
+                'status' => false,
+                'message' => "Client introuvable"
+            ], 404);
+        }
+
         return response()->json([
-            'status' => false,
-            'message' => "Client introuvable"
-        ], 404);
+            'status' => true,
+            'client' => $client
+        ], 200);
     }
 
-    return response()->json([
-        'status' => true,
-        'client' => $client
-    ], 200);
-}
+     public function getTopClientsByPaidInvoices()
+    {
+        $topClients = Client::select('clients.*', DB::raw('SUM(documents.totale) as total_paid'))
+            ->join('documents', 'clients.id', '=', 'documents.client_id')
+            ->where('documents.type', 'invoice')
+            ->where('documents.status', 'payée')
+            ->groupBy('clients.id')
+            ->orderByDesc('total_paid')
+            ->limit(5)
+            ->get();
 
-public function topClientsByPaidInvoices()
-{
-    $clients = Client::select('clients.*', DB::raw('SUM(documents.totale) as total_paid'))
-        ->join('documents', 'documents.client_id', '=', 'clients.id')
-        ->where('documents.type', 'invoice')
-        ->where('documents.status', 'payée')
-        ->groupBy('clients.id')
-        ->orderByDesc('total_paid')
-        ->limit(5)
-        ->get();
-
-    return response()->json([
-        'status' => true,
-        'top_clients' => $clients
-    ]);
-}
+        return response()->json([
+            'status' => true,
+            'clients' => $topClients
+        ]);
+    }
 
 
 }

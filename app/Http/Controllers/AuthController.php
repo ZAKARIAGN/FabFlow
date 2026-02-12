@@ -162,4 +162,91 @@ class AuthController extends Controller
             "message" => "utilisateur supprimé avec succés"
         ]);
     }
+
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Utilisateur introuvable'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email,' . $user->id,
+            ],
+            'password' => 'nullable|string|min:8|confirmed',
+            'role' => 'required|string'
+        ], [
+            'first_name.required' => 'Le prénom est obligatoire.',
+            'last_name.required' => 'Le nom est obligatoire.',
+            'email.required' => 'L’adresse email est obligatoire.',
+            'email.unique' => 'Cet email est déjà utilisé.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+            'role.required' => 'Le rôle est obligatoire.'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $role = Role::where('roleName', $request->role)->first();
+
+        if (!$role) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Rôle invalide'
+            ], 400);
+        }
+
+        $user->first_name = $request->first_name;
+        $user->last_name = $request->last_name;
+        $user->email = $request->email;
+        $user->role_id = $role->id;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Utilisateur mis à jour avec succès',
+            'user' => $user
+        ], 200);
+    }
+
+    public function getUserById($id)
+    {
+        $user = User::with('role')->find($id);
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Utilisateur introuvable'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'user' => $user
+        ], 200);
+    }
+
+
 }
+
+

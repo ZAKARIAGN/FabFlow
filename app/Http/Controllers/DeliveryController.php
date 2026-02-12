@@ -38,7 +38,7 @@ class DeliveryController extends Controller
             'items.required' => 'Vous devez ajouter au moins un article',
             'items.array' => 'Les articles doivent être un tableau',
             'items.*.produit_id.required' => 'Chaque article doit avoir un produit',
-            'items.*.produit_id.exists' => 'Le produit sélectionné n’existe pas',
+            'items.*.produit_id.exists' => 'Le produit sélectionné n\'existe pas',
             'items.*.qtte.required' => 'La quantité est obligatoire',
             'items.*.qtte.integer' => 'La quantité doit être un nombre entier',
             'items.*.qtte.min' => 'La quantité doit être au moins 1',
@@ -56,18 +56,21 @@ class DeliveryController extends Controller
                 $quote = Document::with('items')->findOrFail($quoteID);
 
                 if ($quote->status !== "validé") {
-                    throw new \Exception("cette devis n'est pad validé");
-                };
+                    throw new \Exception("Cette devis n'est pas validé");
+                }
+
+                // Générer le numéro avec le même shared_id que le devis
+                $numberData = $documentService->generateNumberFromParent("delivery", $quote);
 
                 $delivery = Document::create([
                     'type' => 'delivery',
-                    'number' => $documentService->generateNumber("delivery"),
+                    'number' => $numberData['number'],
+                    'shared_id' => $numberData['shared_id'],
                     'status' => 'livré',
                     'totale' => $request->totale,
                     'client_id' => $quote->client_id,
                     'parent_id' => $quote->id
                 ]);
-
 
                 foreach ($request->items as $itemData) {
                     $produit = Produit::findOrFail($itemData['produit_id']);
@@ -102,7 +105,6 @@ class DeliveryController extends Controller
                         } elseif ($delivery->status === 'annulé') {
                             $produit->increment('stock', $userQtte);
                             $quoteItem->increment('qtte', $userQtte);
-
                         }
                     }
 
@@ -123,10 +125,7 @@ class DeliveryController extends Controller
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
         }
-
-
     }
-
 
     public function updateStatus(Request $request, $id)
     {
@@ -174,8 +173,6 @@ class DeliveryController extends Controller
         ]);
     }
 
-
-
     public function search(Request $request)
     {
         $query = trim($request->query('q'));
@@ -185,7 +182,10 @@ class DeliveryController extends Controller
                 "message" => "Veuillez saisir un terme de recherche"
             ], 400);
         }
-        $deliveries = Document::where('number', 'LIKE', "%{$query}%")
+        $deliveries = Document::where(function ($q) use ($query) {
+            $q->where('number', 'LIKE', "%{$query}%")
+                ->orWhere('shared_id', 'LIKE', "%{$query}%");
+        })
             ->where("type", "delivery")
             ->get();
         return response()->json([
@@ -193,8 +193,6 @@ class DeliveryController extends Controller
             "deliveries" => $deliveries->load(["client", "items.produit"])
         ], 200);
     }
-
-
 
     public function searchValidateDeliveries(Request $request)
     {
@@ -205,7 +203,10 @@ class DeliveryController extends Controller
                 "message" => "Veuillez saisir un terme de recherche"
             ], 400);
         }
-        $deliveries = Document::where('number', 'LIKE', "%{$query}%")
+        $deliveries = Document::where(function ($q) use ($query) {
+            $q->where('number', 'LIKE', "%{$query}%")
+                ->orWhere('shared_id', 'LIKE', "%{$query}%");
+        })
             ->where("type", "delivery")
             ->where("status", "livré")
             ->get();
@@ -214,7 +215,6 @@ class DeliveryController extends Controller
             "deliveries" => $deliveries->load(["client", "items.produit"])
         ], 200);
     }
-
 
     public function getAllDeliveries()
     {
@@ -233,5 +233,4 @@ class DeliveryController extends Controller
             "deliveries" => $deliveries
         ]);
     }
-
 }

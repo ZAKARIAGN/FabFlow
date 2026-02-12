@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Document;
 use App\Models\Produit;
 use App\Services\DocumentService;
@@ -33,24 +32,25 @@ class QuoteController extends Controller
                     }
                 }
             },
-            "items.*.tax_rate" => "required|integer|min:0"
+            "items.*.tax_rate" => "required|integer|min:0|max:100"
         ], [
             'totale.required' => 'Le champ totale est obligatoire.',
             'totale.numeric' => 'Le champ totale doit être un nombre.',
             'totale.min' => 'Le champ totale doit être supérieur ou égal à 0.',
             'client_id.required' => 'Le client est obligatoire.',
-            'client_id.exists' => 'Le client sélectionné n’existe pas.',
+            'client_id.exists' => 'Le client sélectionné n\'existe pas.',
             'items.required' => 'Vous devez ajouter au moins un article.',
             'items.array' => 'Les articles doivent être un tableau.',
             'items.min' => 'Vous devez ajouter au moins un article.',
             'items.*.produit_id.required' => 'Chaque article doit avoir un produit sélectionné.',
-            'items.*.produit_id.exists' => 'Le produit sélectionné n’existe pas.',
+            'items.*.produit_id.exists' => 'Le produit sélectionné \'existe pas.',
             'items.*.qtte.required' => 'La quantité de chaque article est obligatoire.',
             'items.*.qtte.integer' => 'La quantité doit être un nombre entier.',
             'items.*.qtte.min' => 'La quantité doit être au moins 1.',
             'items.*.tax_rate.required' => 'Le taux de taxe est obligatoire pour chaque article.',
             'items.*.tax_rate.integer' => 'Le taux de taxe doit être un nombre entier.',
-            'items.*.tax_rate.min' => 'Le taux de taxe ne peut pas être négatif.'
+            'items.*.tax_rate.min' => 'Le taux de taxe ne peut pas être négatif.',
+            'items.*.tax_rate.max' => 'Le taux de TVA ne peut pas dépasser 100%.',
         ]);
 
         if ($validator->fails()) {
@@ -60,12 +60,15 @@ class QuoteController extends Controller
             ], 422);
         }
 
-
         try {
             return DB::transaction(function () use ($request, $documentService) {
+                // Générer le numéro et l'ID partagé
+                $numberData = $documentService->generateNumber("quote");
+
                 $quote = Document::create([
                     'type' => "quote",
-                    'number' => $documentService->generateNumber("quote"),
+                    'number' => $numberData['number'],
+                    'shared_id' => $numberData['shared_id'],
                     'status' => 'validé',
                     'client_id' => $request->client_id,
                     'totale' => $request->totale,
@@ -98,16 +101,11 @@ class QuoteController extends Controller
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
         }
-
-
-
     }
-
 
     public function update(Request $request, $id)
     {
         $quote = Document::findOrFail($id);
-
 
         $validator = Validator::make($request->all(), [
             'client_id' => 'required|exists:clients,id',
@@ -133,12 +131,12 @@ class QuoteController extends Controller
             'totale.numeric' => 'Le champ totale doit être un nombre.',
             'totale.min' => 'Le champ totale doit être supérieur ou égal à 0.',
             'client_id.required' => 'Le client est obligatoire.',
-            'client_id.exists' => 'Le client sélectionné n’existe pas.',
+            'client_id.exists' => 'Le client sélectionné n\'existe pas.',
             'items.required' => 'Vous devez ajouter au moins un article.',
             'items.array' => 'Les articles doivent être un tableau.',
             'items.min' => 'Vous devez ajouter au moins un article.',
             'items.*.produit_id.required' => 'Chaque article doit avoir un produit sélectionné.',
-            'items.*.produit_id.exists' => 'Le produit sélectionné n’existe pas.',
+            'items.*.produit_id.exists' => 'Le produit sélectionné n\'existe pas.',
             'items.*.qtte.required' => 'La quantité de chaque article est obligatoire.',
             'items.*.qtte.integer' => 'La quantité doit être un nombre entier.',
             'items.*.qtte.min' => 'La quantité doit être au moins 1.',
@@ -188,7 +186,7 @@ class QuoteController extends Controller
                     'status' => true,
                     'message' => 'Document mis à jour avec succès',
                     'document' => $quote->load(['client', 'items.produit']),
-                    'redirect_to'=>$redirect
+                    'redirect_to' => $redirect
                 ], 200);
             });
 
@@ -198,11 +196,7 @@ class QuoteController extends Controller
                 'message' => 'Erreur technique: ' . $e->getMessage()
             ], 500);
         }
-
     }
-
-
-
 
     public function updateStatus(Request $request, $id)
     {
@@ -212,18 +206,15 @@ class QuoteController extends Controller
             'status' => ['required', Rule::in(['validé', 'annulé'])]
         ]);
 
-
         $quote->update([
             "status" => $request->status
         ]);
-
 
         return response()->json([
             "status" => true,
             'message' => 'Statut mis à jour vers ' . $request->status,
         ]);
     }
-
 
     public function search(Request $request)
     {
@@ -235,6 +226,7 @@ class QuoteController extends Controller
             ], 400);
         }
         $quotes = Document::where('number', 'LIKE', "%{$query}%")
+            ->orWhere('shared_id', 'LIKE', "%{$query}%")
             ->where("type", "quote")
             ->get();
         return response()->json([
@@ -242,8 +234,6 @@ class QuoteController extends Controller
             "quotes" => $quotes->load(['client', 'items.produit'])
         ], 200);
     }
-
-
 
     public function searchValidatedQuotes(Request $request)
     {
@@ -254,7 +244,10 @@ class QuoteController extends Controller
                 "message" => "Veuillez saisir un terme de recherche"
             ], 400);
         }
-        $quotes = Document::where('number', 'LIKE', "%{$query}%")
+        $quotes = Document::where(function ($q) use ($query) {
+            $q->where('number', 'LIKE', "%{$query}%")
+                ->orWhere('shared_id', 'LIKE', "%{$query}%");
+        })
             ->where("type", "quote")
             ->where("status", "validé")
             ->get();
@@ -263,7 +256,6 @@ class QuoteController extends Controller
             "quotes" => $quotes->load(["client", "items.produit"])
         ], 200);
     }
-
 
     public function getAllQuotes()
     {
@@ -274,7 +266,6 @@ class QuoteController extends Controller
         ]);
     }
 
-
     public function getvalidateQuotes()
     {
         $quotes = Document::where("type", "quote")->where("status", "validé")->with(['client', 'items.produit'])->get();
@@ -283,7 +274,6 @@ class QuoteController extends Controller
             "quotes" => $quotes
         ]);
     }
-
 
     public function index()
     {
@@ -311,7 +301,6 @@ class QuoteController extends Controller
         ], 200);
     }
 
-
     public function searchDocument(Request $request)
     {
         $query = trim($request->query('q'));
@@ -322,6 +311,7 @@ class QuoteController extends Controller
             ], 400);
         }
         $quotes = Document::where('number', 'LIKE', "%{$query}%")
+            ->orWhere('shared_id', 'LIKE', "%{$query}%")
             ->get();
         return response()->json([
             "status" => true,
