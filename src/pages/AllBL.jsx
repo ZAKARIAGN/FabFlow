@@ -17,6 +17,7 @@ const AllDeliveries = () => {
   const [query, setQuery] = useState("");
   const [errMsg, setErrMsg] = useState({});
   const [loadingId, setLoadingId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const statusOptions = {
     quote: ["validé", "annulé"],
@@ -27,10 +28,13 @@ const AllDeliveries = () => {
   // Extract fetchDocuments to reuse it
   const fetchDocuments = async () => {
     try {
+      setLoading(true);
       const data = await GetAllDeliveries(setErrMsg);
       setDocuments(data || []);
     } catch {
       setErrMsg({ message: "Erreur lors du chargement des documents" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,16 +88,24 @@ const AllDeliveries = () => {
 
   const dataSource = query.trim() === "" ? documents : documentsSearched;
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3da9fc]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 min-h-screen animate-in fade-in duration-500">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-black text-[#094067] tracking-tighter uppercase">
-            Gestion des Documents
+            Gestion des Bons de Livraison
           </h1>
           <p className="text-[#5f6c7b] text-sm">
-            Consulter et gérer les flux de documents
+            Consulter et gérer les bons de livraison
           </p>
         </div>
 
@@ -103,6 +115,13 @@ const AllDeliveries = () => {
           </button>
         </Link>
       </div>
+
+      {/* Error */}
+      {errMsg.message && (
+        <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm mb-4">
+          {errMsg.message}
+        </div>
+      )}
 
       {/* Search */}
       <div className="mb-4">
@@ -131,90 +150,98 @@ const AllDeliveries = () => {
           </thead>
 
           <tbody className="divide-y divide-[#90b4ce]/5">
-            {dataSource.map((doc) => (
-              <tr
-                key={doc.id}
-                className="group hover:bg-[#90b4ce]/5 transition-colors"
-              >
-                <td className="p-4 font-bold text-xs text-[#5f6c7b]">
-                  {doc.number}
-                </td>
-                <td className="p-4 font-bold text-[#094067]">
-                  {doc.client?.company_name}
-                </td>
-                <td className="p-4">
-                  <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                      doc.type === "delivery"
-                        ? "bg-purple-100 text-purple-700"
-                        : doc.type === "invoice"
+            {dataSource.length > 0 ? (
+              dataSource.map((doc) => (
+                <tr
+                  key={doc.id}
+                  className="group hover:bg-[#90b4ce]/5 transition-colors"
+                >
+                  <td className="p-4 font-bold text-xs text-[#5f6c7b]">
+                    {doc.number}
+                  </td>
+                  <td className="p-4 font-bold text-[#094067]">
+                    {doc.client?.company_name}
+                  </td>
+                  <td className="p-4">
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        doc.type === "delivery"
+                          ? "bg-purple-100 text-purple-700"
+                          : doc.type === "invoice"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-blue-100 text-blue-700"
+                      }`}
+                    >
+                      {doc.type === "quote" ? "DEVIS" : doc.type}
+                    </span>
+                  </td>
+                  <td className="p-4 text-center text-sm font-bold text-[#5f6c7b]">
+                    {doc.items?.reduce((s, l) => s + Number(l.qtte), 0)}
+                  </td>
+                  <td className="p-4 text-sm font-black text-[#094067]">
+                    {doc.totale?.toLocaleString("fr-FR")} DH
+                  </td>
+                  <td className="p-4">
+                    <select
+                      value={doc.status}
+                      onChange={(e) =>
+                        handleStatusChange(doc, e.target.value)
+                      }
+                      disabled={loadingId === doc.id}
+                      className={`p-2 border rounded w-full text-sm ${
+                        doc.status === "annulé"
+                          ? "bg-red-100 text-red-700"
+                          : doc.status === "validé" ||
+                            doc.status === "payée" ||
+                            doc.status === "livré"
                           ? "bg-green-100 text-green-700"
-                          : "bg-blue-100 text-blue-700"
-                    }`}
-                  >
-                    {doc.type === "quote" ? "DEVIS" : doc.type}
-                  </span>
-                </td>
-                <td className="p-4 text-center text-sm font-bold text-[#5f6c7b]">
-                  {doc.items?.reduce((s, l) => s + Number(l.qtte), 0)}
-                </td>
-                <td className="p-4 text-sm font-black text-[#094067]">
-                  {doc.totale?.toLocaleString("fr-FR")} DH
-                </td>
-                <td className="p-4">
-                  <select
-                    value={doc.status}
-                    onChange={(e) =>
-                      handleStatusChange(doc, e.target.value)
-                    }
-                    disabled={loadingId === doc.id}
-                    className={`p-2 border rounded w-full text-sm ${
-                      doc.status === "annulé"
-                        ? "bg-red-100 text-red-700"
-                        : doc.status === "validé" ||
-                          doc.status === "payée" ||
-                          doc.status === "livré"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {statusOptions[doc.type]?.map((s) => (
-                      <option key={s} value={s}>
-                        {s.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="p-4 text-right">
-                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {doc.type === "quote" && (
-                      <Link to={`/admin/update-devis/${doc.id}`}>
-                        <button className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg">
-                          <Edit size={16} />
+                          : "bg-yellow-100 text-yellow-700"
+                      } ${loadingId === doc.id ? "opacity-50 cursor-wait" : ""}`}
+                    >
+                      {statusOptions[doc.type]?.map((s) => (
+                        <option key={s} value={s}>
+                          {s.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="p-4 text-right">
+                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {doc.type === "quote" && (
+                        <Link to={`/admin/modifier-produit/${doc.id}`}>
+                          <button className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg">
+                            <Edit size={16} />
+                          </button>
+                        </Link>
+                      )}
+
+                      <Link to={`/admin/documents/${doc.id}`}>
+                        <button className="p-1.5 text-[#3da9fc] hover:bg-[#3da9fc]/10 rounded-lg">
+                          <Eye size={16} />
                         </button>
                       </Link>
-                    )}
 
-                    <Link to={`/admin/documents/${doc.id}`}>
-                      <button className="p-1.5 text-[#3da9fc] hover:bg-[#3da9fc]/10 rounded-lg">
-                        <Eye size={16} />
-                      </button>
-                    </Link>
-
-                    <PDFDownloadLink
-                      document={<DocumentPDF doc={doc} />}
-                      fileName={`${doc.category}_${doc.number}.pdf`}
-                    >
-                      {({ loading }) => (
-                        <button className="p-1.5 text-[#e11d48] hover:bg-rose-50 rounded-lg">
-                          <Download size={16} />
-                        </button>
-                      )}
-                    </PDFDownloadLink>
-                  </div>
+                      <PDFDownloadLink
+                        document={<DocumentPDF doc={doc} />}
+                        fileName={`${doc.category}_${doc.number}.pdf`}
+                      >
+                        {({ loading }) => (
+                          <button className="p-1.5 text-[#e11d48] hover:bg-rose-50 rounded-lg">
+                            <Download size={16} />
+                          </button>
+                        )}
+                      </PDFDownloadLink>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="p-6 text-center text-gray-400">
+                  Aucun document trouvé
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

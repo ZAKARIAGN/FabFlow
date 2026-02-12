@@ -124,12 +124,12 @@ const ProduitForm = () => {
 
         {/* Buttons */}
         <div className="flex justify-end gap-3 pt-4 border-t">
-          <Link
-            to="/admin/produits"
+          <button
+          onClick={()=>navigate(-1)}
             className="px-6 py-2 text-[#5f6c7b] hover:bg-gray-100 rounded-lg"
           >
             Annuler
-          </Link>
+          </button>
           <button
             type="submit"
             className="px-6 py-2 bg-[#3da9fc] text-white font-bold rounded-lg hover:bg-[#094067]"

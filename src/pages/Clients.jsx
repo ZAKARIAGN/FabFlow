@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Trash2, Edit, Search, UserPlus, MapPin, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -6,23 +6,39 @@ import {
   GetAllClients,
   SearchClient,
 } from "../services/ClientsService";
-import { toast } from "react-toastify";
-import Cookies from "js-cookie";
 
 const Clients = () => {
   const [clients, setClients] = useState([]);
   const [errMsg, setErrMsg] = useState({});
   const [query, setQuery] = useState("");
   const [clientsSearched, setClientsSearched] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Get current location to determine user role
+  const location = useLocation();
+  const isCommercial = location.pathname.includes("/commercial");
+  
+  // Determine route based on current path
+  const addClientRoute = isCommercial 
+    ? "/commercial/Addclients" 
+    : "/admin/Addclients";
+
+  const updateClientRoute = (clientId) => 
+    isCommercial
+      ? `/commercial/modifier-client/${clientId}`
+      : `/admin/modifier-client/${clientId}`;
 
   // fetch clients
   useEffect(() => {
     const fetchClients = async () => {
       try {
+        setLoading(true);
         const data = await GetAllClients(setErrMsg);
         setClients(data || []);
       } catch {
         setErrMsg({ message: "Erreur lors du chargement des clients" });
+      } finally {
+        setLoading(false);
       }
     };
     fetchClients();
@@ -34,7 +50,6 @@ const Clients = () => {
 
     try {
       await DeleteClient(id, setErrMsg);
-      toast.success("Client supprimé avec succès");
       setClients((prev) => prev.filter((c) => c.id !== id));
       setClientsSearched((prev) => prev.filter((c) => c.id !== id));
     } catch {
@@ -61,6 +76,14 @@ const Clients = () => {
   // choose data source
   const dataSource = query.trim() === "" ? clients : clientsSearched;
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3da9fc]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500 mt-10">
       {/* Header */}
@@ -77,7 +100,7 @@ const Clients = () => {
           )}
         </div>
 
-        <Link to="/admin/Addclients">
+        <Link to={addClientRoute}>
           <button className="bg-[#3da9fc] text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-[#094067] transition-all shadow-md">
             <UserPlus size={20} />
             Nouveau Client
@@ -183,7 +206,7 @@ const Clients = () => {
 
                   <td className="p-4 text-right">
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Link to={`/admin/updateClient/${client.id}`}>
+                      <Link to={updateClientRoute(client.id)}>
                         <button className="p-1.5 text-[#5f6c7b] hover:text-[#3da9fc]">
                           <Edit size={16} />
                         </button>

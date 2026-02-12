@@ -10,6 +10,7 @@ import {
 import { updateStatusDeliveries } from "../services/DeliveryService";
 import { updateStatusQuotes } from "../services/QuoteService";
 import { updateStatusInvoices } from "../services/InvoiceService";
+import ErrMsg from "../compenet/ErrMsg";
 
 const AllDocuments = () => {
   const [documents, setDocuments] = useState([]);
@@ -17,6 +18,7 @@ const AllDocuments = () => {
   const [query, setQuery] = useState("");
   const [errMsg, setErrMsg] = useState({});
   const [loadingId, setLoadingId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const statusOptions = {
     quote: ["validé", "annulé"],
@@ -24,13 +26,17 @@ const AllDocuments = () => {
     invoice: ["payée", "en_attente"],
   };
 
-  // Extract fetchDocuments to reuse it
+  // Fetch documents
   const fetchDocuments = async () => {
     try {
+      setLoading(true);
+      setErrMsg({});
       const data = await GetAllDoucuments(setErrMsg);
       setDocuments(data || []);
     } catch {
       setErrMsg({ message: "Erreur lors du chargement des documents" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,9 +44,11 @@ const AllDocuments = () => {
     fetchDocuments();
   }, []);
 
+  // Handle search
   const handleSearch = async (e) => {
     const value = e.target.value;
     setQuery(value);
+    setErrMsg({});
 
     if (value.trim() === "") {
       setDocumentsSearched([]);
@@ -55,34 +63,38 @@ const AllDocuments = () => {
     }
   };
 
+  // Handle status change
   const handleStatusChange = async (doc, newStatus) => {
     setLoadingId(doc.id);
+    setErrMsg({});
     try {
-      if (doc.type === "quote") {
-        await updateStatusQuotes(doc.id, newStatus);
-      } else if (doc.type === "delivery") {
+      if (doc.type === "quote") await updateStatusQuotes(doc.id, newStatus);
+      else if (doc.type === "delivery")
         await updateStatusDeliveries(doc.id, newStatus);
-      } else if (doc.type === "invoice") {
+      else if (doc.type === "invoice")
         await updateStatusInvoices(doc.id, newStatus);
-      }
 
-      // Automatic refresh after status change
       await fetchDocuments();
-      
-      // Also refresh search results if there's a query
       if (query.trim() !== "") {
         const data = await SearchDocuments(query, setErrMsg);
         setDocumentsSearched(data || []);
       }
-    } catch (err) {
-      console.log(err);
+    } catch {
       setErrMsg({ message: "Erreur lors de la mise à jour du statut" });
     } finally {
       setLoadingId(null);
     }
   };
 
-  const dataSource = query.trim() === "" ? documents : documentsSearched;
+  const dataSource = query.trim() ? documentsSearched : documents;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3da9fc]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 min-h-screen animate-in fade-in duration-500">
@@ -104,6 +116,9 @@ const AllDocuments = () => {
         </Link>
       </div>
 
+      {/* Error */}
+      {errMsg.message && <ErrMsg msg={errMsg.message} />}
+
       {/* Search */}
       <div className="mb-4">
         <input
@@ -115,7 +130,7 @@ const AllDocuments = () => {
         />
       </div>
 
-      {/* Documents Table */}
+      {/* Table */}
       <div className="bg-white rounded-2xl border border-[#90b4ce]/20 shadow-sm overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-[#f8fafc] border-b border-[#90b4ce]/10">
@@ -131,90 +146,98 @@ const AllDocuments = () => {
           </thead>
 
           <tbody className="divide-y divide-[#90b4ce]/5">
-            {dataSource.map((doc) => (
-              <tr
-                key={doc.id}
-                className="group hover:bg-[#90b4ce]/5 transition-colors"
-              >
-                <td className="p-4 font-bold text-xs text-[#5f6c7b]">
-                  {doc.number}
-                </td>
-                <td className="p-4 font-bold text-[#094067]">
-                  {doc.client?.company_name}
-                </td>
-                <td className="p-4">
-                  <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                      doc.type === "delivery"
-                        ? "bg-purple-100 text-purple-700"
-                        : doc.type === "invoice"
+            {dataSource.length > 0 ? (
+              dataSource.map((doc) => (
+                <tr
+                  key={doc.id}
+                  className="group hover:bg-[#90b4ce]/5 transition-colors"
+                >
+                  <td className="p-4 font-bold text-xs text-[#5f6c7b]">
+                    {doc.number}
+                  </td>
+                  <td className="p-4 font-bold text-[#094067]">
+                    {doc.client?.company_name}
+                  </td>
+                  <td className="p-4">
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        doc.type === "delivery"
+                          ? "bg-purple-100 text-purple-700"
+                          : doc.type === "invoice"
                           ? "bg-green-100 text-green-700"
                           : "bg-blue-100 text-blue-700"
-                    }`}
-                  >
-                    {doc.type === "quote" ? "DEVIS" : doc.type}
-                  </span>
-                </td>
-                <td className="p-4 text-center text-sm font-bold text-[#5f6c7b]">
-                  {doc.items?.reduce((s, l) => s + Number(l.qtte), 0)}
-                </td>
-                <td className="p-4 text-sm font-black text-[#094067]">
-                  {doc.totale?.toLocaleString("fr-FR")} DH
-                </td>
-                <td className="p-4">
-                  <select
-                    value={doc.status}
-                    onChange={(e) =>
-                      handleStatusChange(doc, e.target.value)
-                    }
-                    disabled={loadingId === doc.id}
-                    className={`p-2 border rounded w-full text-sm ${
-                      doc.status === "annulé"
-                        ? "bg-red-100 text-red-700"
-                        : doc.status === "validé" ||
-                          doc.status === "payée" ||
-                          doc.status === "livré"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {statusOptions[doc.type]?.map((s) => (
-                      <option key={s} value={s}>
-                        {s.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="p-4 text-right">
-                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {doc.type === "quote" && (
-                      <Link to={`/admin/update-devis/${doc.id}`}>
-                        <button className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg">
-                          <Edit size={16} />
+                      }`}
+                    >
+                      {doc.type === "quote" ? "DEVIS" : doc.type}
+                    </span>
+                  </td>
+                  <td className="p-4 text-center text-sm font-bold text-[#5f6c7b]">
+                    {doc.items?.reduce((s, l) => s + Number(l.qtte), 0)}
+                  </td>
+                  <td className="p-4 text-sm font-black text-[#094067]">
+                    {doc.totale?.toLocaleString("fr-FR")} DH
+                  </td>
+                  <td className="p-4">
+                    <select
+                      value={doc.status}
+                      onChange={(e) =>
+                        handleStatusChange(doc, e.target.value)
+                      }
+                      disabled={loadingId === doc.id}
+                      className={`p-2 border rounded w-full text-sm ${
+                        doc.status === "annulé"
+                          ? "bg-red-100 text-red-700"
+                          : doc.status === "validé" ||
+                            doc.status === "payée" ||
+                            doc.status === "livré"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      } ${loadingId === doc.id ? "opacity-50 cursor-wait" : ""}`}
+                    >
+                      {statusOptions[doc.type]?.map((s) => (
+                        <option key={s} value={s}>
+                          {s.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="p-4 text-right">
+                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {doc.type === "quote" && (
+                        <Link to={`/admin/modifier-produit/${doc.id}`}>
+                          <button className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg">
+                            <Edit size={16} />
+                          </button>
+                        </Link>
+                      )}
+
+                      <Link to={`/admin/documents/${doc.id}`}>
+                        <button className="p-1.5 text-[#3da9fc] hover:bg-[#3da9fc]/10 rounded-lg">
+                          <Eye size={16} />
                         </button>
                       </Link>
-                    )}
 
-                    <Link to={`/admin/documents/${doc.id}`}>
-                      <button className="p-1.5 text-[#3da9fc] hover:bg-[#3da9fc]/10 rounded-lg">
-                        <Eye size={16} />
-                      </button>
-                    </Link>
-
-                    <PDFDownloadLink
-                      document={<DocumentPDF doc={doc} />}
-                      fileName={`${doc.category}_${doc.number}.pdf`}
-                    >
-                      {({ loading }) => (
-                        <button className="p-1.5 text-[#e11d48] hover:bg-rose-50 rounded-lg">
-                          <Download size={16} />
-                        </button>
-                      )}
-                    </PDFDownloadLink>
-                  </div>
+                      <PDFDownloadLink
+                        document={<DocumentPDF doc={doc} />}
+                        fileName={`${doc.category}_${doc.number}.pdf`}
+                      >
+                        {({ loading }) => (
+                          <button className="p-1.5 text-[#e11d48] hover:bg-rose-50 rounded-lg">
+                            <Download size={16} />
+                          </button>
+                        )}
+                      </PDFDownloadLink>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="p-6 text-center text-gray-400">
+                  Aucun document trouvé
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

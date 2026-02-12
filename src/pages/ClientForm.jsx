@@ -121,12 +121,12 @@ const ClientForm = () => {
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <Link
-            to={"/admin/clients"}
+          <button
+            onClick={()=>navigate(-1)}
             className="px-6 py-2 text-[#5f6c7b] font-medium hover:bg-gray-100 rounded-lg transition-colors"
           >
             Annuler
-          </Link>
+          </button>
           <button
             type="submit"
             className="px-6 py-2 bg-[#3da9fc] text-white font-bold rounded-lg hover:bg-[#094067] transition-all"

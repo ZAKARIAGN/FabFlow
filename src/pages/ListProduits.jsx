@@ -1,32 +1,16 @@
-import { Plus, Search, Filter, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { Search, Filter, Package } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
 import {
-  DeleteProduit,
   GetAllProduits,
   SearchProduit,
 } from "../services/ProduitService";
 
-const Produits = () => {
+const ProduitsView = () => {
   const [produits, setProduits] = useState([]);
   const [errMsg, setErrMsg] = useState({});
   const [query, setQuery] = useState("");
   const [produitsSearched, setProduitsSearched] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Get current location to determine user role
-  const location = useLocation();
-  const isCommercial = location.pathname.includes("/commercial");
-  
-  // Determine route based on current path
-  const addProduitRoute = isCommercial 
-    ? "/commercial/ajouter-produit" 
-    : "/admin/ajouter-produit";
-
-  const updateProduitRoute = (produitId) => 
-    isCommercial
-      ? `/commercial/modifier-produit/${produitId}`
-      : `/admin/modifier-produit/${produitId}`;
 
   // fetch produits
   useEffect(() => {
@@ -43,19 +27,6 @@ const Produits = () => {
     };
     fetchProduits();
   }, []);
-
-  // handle delete produit
-  const handleDelete = async (id) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer ce produit ?")) return;
-
-    try {
-      await DeleteProduit(id, setErrMsg);
-      setProduits((prev) => prev.filter((c) => c.id !== id));
-      setProduitsSearched((prev) => prev.filter((c) => c.id !== id));
-    } catch {
-      setErrMsg({ message: "Erreur lors de la suppression du produit" });
-    }
-  };
 
   // handle search
   const handleSearch = async (e) => {
@@ -79,36 +50,38 @@ const Produits = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3da9fc]"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3da9fc] mx-auto mb-4"></div>
+          <p className="text-[#094067] font-semibold">Chargement des produits...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 mt-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 animate-in fade-in duration-500 mt-10 p-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Package className="text-[#094067]" size={32} />
         <div>
           <h1 className="text-2xl font-bold text-[#094067]">
             Catalogue Produits
           </h1>
           <p className="text-[#5f6c7b] text-sm">
-            Gérez vos articles, services et opérations industrielles.
+            Consultez la liste des articles, services et opérations industrielles.
           </p>
         </div>
-        <Link to={addProduitRoute}>
-          <button className="bg-[#3da9fc] text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-[#094067] transition-all shadow-sm">
-            <Plus size={20} /> Nouveau Produit
-          </button>
-        </Link>
       </div>
 
+      {/* Error Message */}
       {errMsg.message && (
         <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
           {errMsg.message}
         </div>
       )}
 
-      <div className="bg-white p-4 rounded-xl border border-[#90b4ce]/20 flex flex-wrap gap-4 items-center">
+      {/* Search Bar */}
+      <div className="bg-white p-4 rounded-xl border border-[#90b4ce]/20 flex flex-wrap gap-4 items-center shadow-sm">
         <div className="relative flex-1 min-w-[200px]">
           <Search
             className="absolute left-3 top-2.5 text-[#90b4ce]"
@@ -122,11 +95,12 @@ const Produits = () => {
             className="w-full pl-10 pr-4 py-2 bg-[#90b4ce]/5 border border-[#90b4ce]/20 rounded-lg text-sm focus:outline-none focus:border-[#3da9fc]"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 border border-[#90b4ce]/30 rounded-lg text-[#5f6c7b] text-sm hover:bg-gray-50">
+        <button className="flex items-center gap-2 px-4 py-2 border border-[#90b4ce]/30 rounded-lg text-[#5f6c7b] text-sm hover:bg-gray-50 transition-all">
           <Filter size={16} /> Filtres
         </button>
       </div>
 
+      {/* Products Table */}
       <div className="bg-white rounded-xl border border-[#90b4ce]/20 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -139,13 +113,13 @@ const Produits = () => {
                   Type
                 </th>
                 <th className="p-4 text-[#094067] font-bold text-xs uppercase">
-                  Prix Unit.
+                  Unité
+                </th>
+                <th className="p-4 text-[#094067] font-bold text-xs uppercase">
+                  Prix Unit. (DH)
                 </th>
                 <th className="p-4 text-[#094067] font-bold text-xs uppercase">
                   Stock
-                </th>
-                <th className="p-4 text-[#094067] font-bold text-xs uppercase text-right">
-                  Actions
                 </th>
               </tr>
             </thead>
@@ -154,7 +128,7 @@ const Produits = () => {
                 dataSource.map((p) => (
                   <tr
                     key={p.id}
-                    className="hover:bg-[#90b4ce]/5 transition-colors group"
+                    className="hover:bg-[#90b4ce]/5 transition-colors"
                   >
                     <td className="p-4 text-[#5f6c7b] font-medium text-sm">
                       {p.label}
@@ -172,44 +146,55 @@ const Produits = () => {
                         {p.type}
                       </span>
                     </td>
-                    <td className="p-4 text-[#094067] font-bold text-sm">
-                      {p.prix}
+                    <td className="p-4 text-[#5f6c7b] text-sm">
+                      {p.unite || "N/A"}
                     </td>
                     <td className="p-4 text-[#094067] font-bold text-sm">
-                      {p.stock}
+                      {Number(p.prix).toFixed(2)} DH
                     </td>
-                    <td className="p-4 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link to={updateProduitRoute(p.id)}>
-                          <button className="p-1.5 text-[#5f6c7b] hover:text-[#3da9fc]">
-                            <Edit size={16} />
-                          </button>
-                        </Link>
-                        <button
-                          onClick={() => {
-                            handleDelete(p.id);
-                          }}
-                          className="p-1.5 text-[#5f6c7b] hover:text-[#ef4565]"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                    <td className="p-4">
+                      <span
+                        className={`px-3 py-1 rounded-lg text-sm font-semibold ${
+                          p.stock > 0
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {p.stock}
+                      </span>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="p-6 text-center text-gray-400">
-                    Aucun produit trouvé
+                  <td colSpan="5" className="p-8 text-center">
+                    <Package className="mx-auto mb-3 text-gray-300" size={48} />
+                    <p className="text-gray-400 font-medium">
+                      {query.trim() !== ""
+                        ? "Aucun produit trouvé pour cette recherche"
+                        : "Aucun produit disponible"}
+                    </p>
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Total Count */}
+        {dataSource.length > 0 && (
+          <div className="bg-[#90b4ce]/5 px-4 py-3 border-t border-[#90b4ce]/20">
+            <p className="text-sm text-[#5f6c7b]">
+              <span className="font-bold text-[#094067]">
+                {dataSource.length}
+              </span>{" "}
+              {dataSource.length > 1 ? "produits trouvés" : "produit trouvé"}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default Produits;
+export default ProduitsView;

@@ -11,7 +11,7 @@ export const GetAllClients = async (setErr) => {
   }
 };
 
-export const AddClient = async (client, setErr,navigate) => {
+export const AddClient = async (client, setErr, navigate) => {
   try {
     const res = await Api.post("/clients", client);
     toast.success(res.data.message || "Registration successful!", {
@@ -21,18 +21,15 @@ export const AddClient = async (client, setErr,navigate) => {
         fontSize: "16px",
       },
     });
-    navigate("/admin/clients");
-
+    navigate(res.data.redirect_to);
   } catch (err) {
     HandleErr(err, setErr);
   }
 };
 
-
-
-export const DeleteClient = async (ClientID,setErr)=>{
-  try{
-    const res = await Api.delete(`/clients/${ClientID}`) 
+export const DeleteClient = async (ClientID, setErr) => {
+  try {
+    const res = await Api.delete(`/clients/${ClientID}`);
     toast.success(res.data.message, {
       style: {
         width: "400px",
@@ -40,16 +37,15 @@ export const DeleteClient = async (ClientID,setErr)=>{
         fontSize: "16px",
       },
     });
-  }catch(err){
-    HandleErr(err,setErr)
+  } catch (err) {
+    HandleErr(err, setErr);
   }
-}
+};
 
-
-export const UpdateClientByID = async (client, setErr,navigate) => {
+export const UpdateClientByID = async (client, setErr, navigate) => {
   try {
     const res = await Api.put(`/clients/${client.id}`, client);
-    navigate("/admin/clients")
+    navigate(res.data.redirect_to);
     toast.success(res.data.message || "Updating successful!", {
       style: {
         width: "400px",
@@ -62,21 +58,29 @@ export const UpdateClientByID = async (client, setErr,navigate) => {
   }
 };
 
-
-export const SearchClient = async(query,setErr)=>{
-  try{
+export const SearchClient = async (query, setErr) => {
+  try {
     const res = await Api.get(`/clients/search?q=${query}`);
-    return res.data.clients
-    }catch(err){
-      HandleErr(err,setErr)
-    }
-}
-
+    return res.data.clients;
+  } catch (err) {
+    HandleErr(err, setErr);
+  }
+};
 
 export const GetClientById = async (id, setErr) => {
   try {
     const res = await Api.get(`/clients/${id}`);
     return res.data.client;
+  } catch (err) {
+    HandleErr(err, setErr);
+  }
+};
+
+
+export const getTopClientsByPaidInvoices = async (setErr) => {
+  try {
+    const res = await Api.get("/clients-top-paid");
+    return res.data.clients;
   } catch (err) {
     HandleErr(err, setErr);
   }

@@ -375,9 +375,6 @@ const PageDeliveries = () => {
               <div className="flex justify-end mt-6">
                 <button
                   onClick={handleAddDelivery}
-                  disabled={
-                    submitting || items.filter((it) => it.qtte > 0).length === 0
-                  }
                   className="flex items-center gap-2 px-8 py-3 bg-[#094067] text-white rounded-xl font-bold hover:bg-[#0a5085] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {submitting ? (

@@ -211,10 +211,10 @@ const PagePickingInvoice = () => {
                           </span>
                         </div>
                         <div className="text-sm text-gray-600 mt-1">
-                          Client: {delivery.quote?.client?.company_name || "N/A"}
+                          Client: {delivery?.client?.company_name || "N/A"}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
-                          Devis: {delivery.quote?.number || "N/A"}
+                          Devis: {delivery?.number || "N/A"}
                         </div>
                       </div>
                       <div className="text-right">
@@ -250,31 +250,31 @@ const PagePickingInvoice = () => {
                 <div>
                   <span className="text-gray-600">Client:</span>
                   <span className="ml-2 font-semibold">
-                    {selectedDelivery.quote?.client?.company_name || "N/A"}
+                    {selectedDelivery?.client?.company_name || "N/A"}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-600">Téléphone:</span>
                   <span className="ml-2 font-semibold">
-                    {selectedDelivery.quote?.client?.tel || "N/A"}
+                    {selectedDelivery?.client?.tel || "N/A"}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-600">Email:</span>
                   <span className="ml-2 font-semibold">
-                    {selectedDelivery.quote?.client?.email || "N/A"}
+                    {selectedDelivery?.client?.email || "N/A"}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-600">ICE:</span>
                   <span className="ml-2 font-semibold">
-                    {selectedDelivery.quote?.client?.vat_number || "N/A"}
+                    {selectedDelivery?.client?.vat_number || "N/A"}
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-600">Devis:</span>
                   <span className="ml-2 font-semibold">
-                    {selectedDelivery.quote?.number || "N/A"}
+                    {selectedDelivery?.number || "N/A"}
                   </span>
                 </div>
                 <div>

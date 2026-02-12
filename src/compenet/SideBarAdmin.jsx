@@ -50,7 +50,7 @@ const SidebarAdmin = () => {
           <span>Picking Factures</span>
         </NavLink>
 
-        <NavLink to="/admin/gestion-comptes" className={linkClass}>
+        <NavLink to="/admin/users" className={linkClass}>
           <span>👥</span>
           <span>Gestion Comptes</span>
         </NavLink>

@@ -23,8 +23,8 @@ const styles = StyleSheet.create({
 const DocumentPDF = ({ doc }) => {
   // تحديد العنوان بناءً على النوع
   const getTitle = () => {
-    if (doc.category === 'quote') return "DEVIS";
-    if (doc.category === 'delivery') return "BON DE LIVRAISON";
+    if (doc.type === 'quote') return "DEVIS";
+    if (doc.type === 'delivery') return "BON DE LIVRAISON";
     return "FACTURE";
   };
 

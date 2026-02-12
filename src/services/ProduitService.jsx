@@ -11,7 +11,7 @@ export const GetAllProduits = async (setErrMsg) => {
   }
 };
 
-export const AddProduit = async (produit, setErrMsg,navigate) => {
+export const AddProduit = async (produit, setErrMsg, navigate) => {
   try {
     const res = await Api.post("/produits", produit);
     toast.success(res.data.message || "Registration successful!", {
@@ -21,18 +21,15 @@ export const AddProduit = async (produit, setErrMsg,navigate) => {
         fontSize: "16px",
       },
     });
-    navigate("/admin/produits");
-
+    navigate(res.data.redirect_to);
   } catch (err) {
     HandleErr(err, setErrMsg);
   }
 };
 
-
-
-export const DeleteProduit = async (ProduitID,setErrMsg)=>{
-  try{
-    const res = await Api.delete(`/produits/${ProduitID}`) 
+export const DeleteProduit = async (ProduitID, setErrMsg) => {
+  try {
+    const res = await Api.delete(`/produits/${ProduitID}`);
     toast.success(res.data.message, {
       style: {
         width: "400px",
@@ -40,16 +37,15 @@ export const DeleteProduit = async (ProduitID,setErrMsg)=>{
         fontSize: "16px",
       },
     });
-  }catch(err){
-    HandleErr(err,setErrMsg)
+  } catch (err) {
+    HandleErr(err, setErrMsg);
   }
-}
+};
 
-
-export const UpdateProduitByID = async (produit, setErrMsg,navigate) => {
+export const UpdateProduitByID = async (produit, setErrMsg, navigate) => {
   try {
     const res = await Api.put(`/produits/${produit.id}`, produit);
-    navigate("/admin/produits")
+    navigate(res.data.redirect_to);
     toast.success(res.data.message || "Updating successful!", {
       style: {
         width: "400px",
@@ -62,16 +58,14 @@ export const UpdateProduitByID = async (produit, setErrMsg,navigate) => {
   }
 };
 
-
-export const SearchProduit= async(query,setErrMsg)=>{
-  try{
+export const SearchProduit = async (query, setErrMsg) => {
+  try {
     const res = await Api.get(`/produits/search?q=${query}`);
-    return res.data.produits
-    }catch(err){
-      HandleErr(err,setErrMsg)
-    }
-}
-
+    return res.data.produits;
+  } catch (err) {
+    HandleErr(err, setErrMsg);
+  }
+};
 
 export const GetProduitById = async (id, setErrMsg) => {
   try {

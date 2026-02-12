@@ -64,7 +64,7 @@ export const GetInvoiceById = async (id, setErr) => {
 
 export const GetSumInvoice = async (setErr) => {
   try {
-    const res = await Api.get(`/invoices/total-paid`);
+    const res = await Api.get(`/invoices-total-paid`);
     return res.data.total_paid_invoices;
   } catch (err) {
     HandleErr(err, setErr);

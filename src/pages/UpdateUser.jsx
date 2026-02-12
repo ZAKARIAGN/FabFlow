@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserPlus, Users, Eye, EyeOff, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
-import { RegisterService } from "../services/AuthService";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { GetUserByID, UpdateUserByID } from "../services/AuthService";
 
-const PageGestionComptes = () => {
+const UpdateUserForm = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -20,11 +22,30 @@ const PageGestionComptes = () => {
   const [loading, setLoading] = useState(false);
 
   const roleOptions = [
-    {value:"",label:"Sélectionner le role"},
+    { value: "", label: "Sélectionner le rôle" },
     { value: "comptable", label: "Comptable" },
     { value: "commercial", label: "Commercial" },
-    { value: "atelier", label: "Atelier" }, 
+    { value: "atelier", label: "Atelier" },
+    { value: "admin", label: "Administrateur" },
   ];
+
+  /* ================= FETCH USER DATA ================= */
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await GetUserByID(id, setErrMsg);
+      if (user) {
+        setFormData({
+          first_name: user.first_name || "",
+          last_name: user.last_name || "",
+          email: user.email || "",
+          password: "",
+          password_confirmation: "",
+          role: user.role?.roleName || "",
+        });
+      }
+    };
+    fetchUser();
+  }, [id]);
 
   /* ================= HANDLE INPUT CHANGE ================= */
   const handleChange = (e) => {
@@ -33,71 +54,15 @@ const PageGestionComptes = () => {
       ...prev,
       [name]: value,
     }));
-    // Clear error for this field
-    setErrMsg((prev) => ({
-      ...prev,
-      [name]: "",
-    }));
-  };
-
-  /* ================= VALIDATE FORM ================= */
-  const validateForm = () => {
-    const errors = {};
-
-    if (!formData.first_name.trim()) {
-      errors.first_name = "Le prénom est requis";
-    }
-
-    if (!formData.last_name.trim()) {
-      errors.last_name = "Le nom est requis";
-    }
-
-    if (!formData.email.trim()) {
-      errors.email = "L'email est requis";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Email invalide";
-    }
-
-    if (!formData.password) {
-      errors.password = "Le mot de passe est requis";
-    } else if (formData.password.length < 8) {
-      errors.password = "Le mot de passe doit contenir au moins 8 caractères";
-    }
-
-    if (!formData.password_confirmation) {
-      errors.password_confirmation = "La confirmation est requise";
-    } else if (formData.password !== formData.password_confirmation) {
-      errors.password_confirmation = "Les mots de passe ne correspondent pas";
-    }
-
-    if (!formData.role) {
-      errors.role = "Le rôle est requis";
-    }
-
-    setErrMsg(errors);
-    return Object.keys(errors).length === 0;
+    setErrMsg((prev) => ({ ...prev, [name]: "" }));
   };
 
   /* ================= HANDLE SUBMIT ================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
     setLoading(true);
     try {
-      await RegisterService(formData, setErrMsg);
-      // Reset form after successful registration
-      setFormData({
-        first_name: "",
-        last_name: "",
-        email: "",
-        password: "",
-        password_confirmation: "",
-        role: "comptable",
-      });
+      await UpdateUserByID(id, formData, setErrMsg, navigate);
     } catch (err) {
       console.error(err);
     } finally {
@@ -106,16 +71,19 @@ const PageGestionComptes = () => {
   };
 
   /* ================= RESET FORM ================= */
-  const handleReset = () => {
-    setFormData({
-      first_name: "",
-      last_name: "",
-      email: "",
-      password: "",
-      password_confirmation: "",
-      role: "comptable",
-    });
+  const handleReset = async () => {
     setErrMsg({});
+    const user = await GetUserByID(id, setErrMsg);
+    if (user) {
+      setFormData({
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        email: user.email || "",
+        password: "",
+        password_confirmation: "",
+        role: user.role?.roleName || "",
+      });
+    }
   };
 
   return (
@@ -127,34 +95,24 @@ const PageGestionComptes = () => {
             <Users className="text-[#094067]" size={32} />
             <div>
               <h1 className="text-3xl font-bold text-[#094067]">
-                Gestion des Comptes Utilisateurs
+                Modifier le Compte Utilisateur
               </h1>
               <p className="text-gray-600 text-sm mt-1">
-                Créer et gérer les comptes des utilisateurs
+                Modifiez les informations de l'utilisateur
               </p>
             </div>
           </div>
-          <Link
-            to="/admin/dashboard"
+          <button
+            onClick={()=>navigate(-1)}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-xl hover:shadow-md transition-all"
           >
             <ArrowLeft size={18} />
             <span>Retour</span>
-          </Link>
+          </button>
         </div>
 
-        {/* Create User Form */}
+        {/* Update User Form */}
         <div className="bg-white rounded-2xl shadow-md p-6">
-          <div className="mb-6">
-            <h2 className="font-bold text-gray-800 text-xl flex items-center gap-2">
-              <UserPlus size={24} />
-              Créer un Nouveau Compte
-            </h2>
-            <p className="text-gray-600 text-sm mt-1">
-              Remplissez les informations pour créer un compte utilisateur
-            </p>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* First Name & Last Name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -167,13 +125,12 @@ const PageGestionComptes = () => {
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  placeholder="Ex: Mohamed"
                   className={`w-full border ${
                     errMsg.first_name ? "border-red-500" : "border-gray-300"
                   } rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#094067] focus:border-transparent`}
                 />
-                {errMsg.first_name && (
-                  <p className="text-red-500 text-xs mt-1">{errMsg.first_name}</p>
+                {errMsg.first_name?.[0] && (
+                  <p className="text-red-500 text-xs mt-1">{errMsg.first_name[0]}</p>
                 )}
               </div>
 
@@ -186,13 +143,12 @@ const PageGestionComptes = () => {
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  placeholder="Ex: Alaoui"
                   className={`w-full border ${
                     errMsg.last_name ? "border-red-500" : "border-gray-300"
                   } rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#094067] focus:border-transparent`}
                 />
-                {errMsg.last_name && (
-                  <p className="text-red-500 text-xs mt-1">{errMsg.last_name}</p>
+                {errMsg.last_name?.[0] && (
+                  <p className="text-red-500 text-xs mt-1">{errMsg.last_name[0]}</p>
                 )}
               </div>
             </div>
@@ -207,13 +163,12 @@ const PageGestionComptes = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="exemple@email.com"
                 className={`w-full border ${
                   errMsg.email ? "border-red-500" : "border-gray-300"
                 } rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#094067] focus:border-transparent`}
               />
-              {errMsg.email && (
-                <p className="text-red-500 text-xs mt-1">{errMsg.email}</p>
+              {errMsg.email?.[0] && (
+                <p className="text-red-500 text-xs mt-1">{errMsg.email[0]}</p>
               )}
             </div>
 
@@ -236,15 +191,15 @@ const PageGestionComptes = () => {
                   </option>
                 ))}
               </select>
-              {errMsg.role && (
-                <p className="text-red-500 text-xs mt-1">{errMsg.role}</p>
+              {errMsg.role?.[0] && (
+                <p className="text-red-500 text-xs mt-1">{errMsg.role[0]}</p>
               )}
             </div>
 
             {/* Password */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Mot de passe <span className="text-red-500">*</span>
+                Mot de passe
               </label>
               <div className="relative">
                 <input
@@ -265,18 +220,18 @@ const PageGestionComptes = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {errMsg.password && (
-                <p className="text-red-500 text-xs mt-1">{errMsg.password}</p>
+              {errMsg.password?.[0] && (
+                <p className="text-red-500 text-xs mt-1">{errMsg.password[0]}</p>
               )}
               <p className="text-gray-500 text-xs mt-1">
-                Minimum 8 caractères
+                Laisser vide si vous ne voulez pas changer le mot de passe
               </p>
             </div>
 
             {/* Password Confirmation */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Confirmer le mot de passe <span className="text-red-500">*</span>
+                Confirmer le mot de passe
               </label>
               <div className="relative">
                 <input
@@ -299,10 +254,8 @@ const PageGestionComptes = () => {
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {errMsg.password_confirmation && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errMsg.password_confirmation}
-                </p>
+              {errMsg.password_confirmation?.[0] && (
+                <p className="text-red-500 text-xs mt-1">{errMsg.password_confirmation[0]}</p>
               )}
             </div>
 
@@ -316,12 +269,12 @@ const PageGestionComptes = () => {
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Création en cours...
+                    Mise à jour en cours...
                   </>
                 ) : (
                   <>
                     <UserPlus size={20} />
-                    Créer le Compte
+                    Mettre à jour le Compte
                   </>
                 )}
               </button>
@@ -337,35 +290,9 @@ const PageGestionComptes = () => {
             </div>
           </form>
         </div>
-
-        {/* Info Card */}
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
-          <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
-            <Users size={20} />
-            Informations sur les Rôles
-          </h3>
-          <div className="space-y-2 text-sm text-blue-800">
-            <div className="flex gap-2">
-              <span className="font-semibold min-w-32">Comptable:</span>
-              <span>Gestion des factures, paiements et documents comptables</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-semibold min-w-32">Commercial:</span>
-              <span>Gestion des devis, clients et opportunités commerciales</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-semibold min-w-32">Magasinier:</span>
-              <span>Gestion des stocks, bons de livraison et inventaire</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-semibold min-w-32">Administrateur:</span>
-              <span>Accès complet à toutes les fonctionnalités du système</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
 };
 
-export default PageGestionComptes;
+export default UpdateUserForm;

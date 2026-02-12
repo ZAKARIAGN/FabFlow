@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "react-router-dom"; 
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { GetClientById, UpdateClientByID } from "../services/ClientsService";
 import ErrMsg from "../compenet/ErrMsg";
@@ -20,7 +20,7 @@ const UpdateClient = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await GetClientById(id, setErrMsg,navigate);
+        const data = await GetClientById(id, setErrMsg, navigate);
         setClientInfos(data);
       } catch (err) {
         console.error("Erreur fetch:", err);
@@ -40,12 +40,11 @@ const UpdateClient = () => {
     e.preventDefault();
     try {
       setErrMsg({});
-      await UpdateClientByID(clientInfos, setErrMsg,navigate);
+      await UpdateClientByID(clientInfos, setErrMsg, navigate);
     } catch (error) {
       console.error(error);
     }
   };
-
 
   return (
     <div className="bg-white p-6 rounded-xl border border-[#90b4ce]/20 shadow-sm">
@@ -57,7 +56,9 @@ const UpdateClient = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Vat Number */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">Vat Number</label>
+            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+              Vat Number
+            </label>
             <input
               onChange={HandleChange}
               type="text"
@@ -71,7 +72,9 @@ const UpdateClient = () => {
 
           {/* Company Name */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">Nom du Client / Raison Sociale</label>
+            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+              Nom du Client / Raison Sociale
+            </label>
             <input
               onChange={HandleChange}
               type="text"
@@ -85,7 +88,9 @@ const UpdateClient = () => {
 
           {/* Email */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">Email de contact</label>
+            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+              Email de contact
+            </label>
             <input
               onChange={HandleChange}
               type="email"
@@ -99,7 +104,9 @@ const UpdateClient = () => {
 
           {/* Tel */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">Numero Tel</label>
+            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+              Numero Tel
+            </label>
             <input
               onChange={HandleChange}
               type="text"
@@ -114,7 +121,9 @@ const UpdateClient = () => {
 
         {/* Address */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-[#5f6c7b] uppercase">Adresse Complète</label>
+          <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+            Adresse Complète
+          </label>
           <textarea
             onChange={HandleChange}
             value={clientInfos.address}
@@ -126,11 +135,12 @@ const UpdateClient = () => {
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <Link to={"/admin/clients"}
+          <button
+            onClick={() => navigate(-1)}
             className="px-6 py-2 text-[#5f6c7b] font-medium hover:bg-gray-100 rounded-lg transition-colors"
           >
             Annuler
-          </Link>
+          </button>
 
           <button
             type="submit"

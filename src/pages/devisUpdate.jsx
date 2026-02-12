@@ -8,6 +8,7 @@ import { GetAllProduits } from "../services/ProduitService";
 import { GetDocumentById } from "../services/DoucmentsService";
 import { UpdateQuoteByID } from "../services/QuoteService";
 import SearchableSelect from "../compenet/SearchableSelect";
+import ErrMsg from "../compenet/ErrMsg";
 
 const PageUpdateDevis = () => {
   const { id } = useParams();
@@ -132,20 +133,12 @@ const PageUpdateDevis = () => {
 
   /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
-    if (!selectedClient) {
-      toast.error("Client obligatoire");
-      return;
-    }
+    setErrMsg({}); // reset errors
 
     const validItems = items.filter((it) => it.produit_id);
 
-    if (validItems.length === 0) {
-      toast.error("Veuillez ajouter au moins un produit");
-      return;
-    }
-
     const payload = {
-      client_id: selectedClient.id,
+      client_id: selectedClient?.id,
       totale: Number(totals.totalTTC.toFixed(2)),
       items: validItems.map((it) => ({
         produit_id: it.produit_id,
@@ -155,7 +148,7 @@ const PageUpdateDevis = () => {
     };
 
     try {
-      await UpdateQuoteByID(id, payload, setErrMsg,navigate);
+      await UpdateQuoteByID(id, payload, setErrMsg, navigate);
     } catch (e) {
       console.error(e);
       toast.error("Erreur lors de la mise à jour");
@@ -211,6 +204,7 @@ const PageUpdateDevis = () => {
               }
               placeholder="Sélectionner un client..."
             />
+            <ErrMsg msg={errMsg.errors?.client_id?.[0]} />
           </div>
         </div>
 
@@ -245,6 +239,9 @@ const PageUpdateDevis = () => {
                           onChange={(value) => updateProduit(index, value)}
                           placeholder="-- Sélectionner --"
                         />
+                        <ErrMsg
+                          msg={errMsg.errors?.[`items.${index}.produit_id`]?.[0]}
+                        />
                       </td>
 
                       <td className="px-3 py-3">
@@ -255,10 +252,10 @@ const PageUpdateDevis = () => {
                           onChange={(e) => updateItem(index, "qtte", e.target.value)}
                           disabled={
                             produit?.type === "service" ||
-                            produit?.type === "operation"
+                            produit?.type === "opération"
                           }
                           className={`w-20 border px-2 py-1.5 rounded text-center ${
-                            produit?.type === "service" || produit?.type === "operation"
+                            produit?.type === "service" || produit?.type === "opération"
                               ? "bg-gray-100 border-gray-200 cursor-not-allowed"
                               : "border-gray-300 focus:outline-none focus:border-blue-500"
                           }`}
