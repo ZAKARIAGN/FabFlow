@@ -70,7 +70,7 @@ const SearchableSelect = ({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-[9999] w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-80 overflow-hidden">
+        <div className="absolute top-full left-0 w-full z-[999] bg-white shadow-2xl border border-gray-200 rounded-lg mt-1">
           {/* Search Input */}
           <div className="p-2 border-b border-gray-200 bg-gray-50">
             <div className="relative">

@@ -1,4 +1,4 @@
-import { toast } from "react-toastify";
+
 import Api from "./api";
 import { HandleErr } from "../compenet/HAndleErr";
 
@@ -24,13 +24,6 @@ export const GetValideQuotes = async (setErr) => {
 export const AddQuotes = async (quote, setErr,navigate) => {
   try {
     const res = await Api.post("/quotes", quote);
-    toast.success(res.data.message || "Registration successful!", {
-      style: {
-        width: "400px",
-        height: "100px",
-        fontSize: "16px",
-      },
-    });
     navigate(res.data.redirect_to)
 
   } catch (err) {
@@ -43,9 +36,6 @@ export const UpdateQuoteByID = async (quoteID, quoteData, setErr, navigate) => {
   try {
     const res = await Api.put(`/quotes/${quoteID}`, quoteData);
     navigate(res.data.redirect_to);
-    toast.success(res.data.message || "Updating successful!", {
-      style: { width: "400px", height: "100px", fontSize: "16px" },
-    });
   } catch (err) {
     HandleErr(err, setErr);
   }

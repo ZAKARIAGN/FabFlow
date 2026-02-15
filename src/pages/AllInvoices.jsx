@@ -11,7 +11,7 @@ import { updateStatusDeliveries } from "../services/DeliveryService";
 import { GetAllQuotes, updateStatusQuotes } from "../services/QuoteService";
 import { GetAllInvoices, SearchInvoice, updateStatusInvoices } from "../services/InvoiceService";
 
-const AllInvoices = () => {
+const AllInvoices = ({ isDark }) => {
   const [documents, setDocuments] = useState([]);
   const [documentsSearched, setDocumentsSearched] = useState([]);
   const [query, setQuery] = useState("");
@@ -25,7 +25,6 @@ const AllInvoices = () => {
     invoice: ["payée", "en_attente"],
   };
 
-  // Extract fetchDocuments to reuse it
   const fetchDocuments = async () => {
     try {
       setLoading(true);
@@ -56,6 +55,7 @@ const AllInvoices = () => {
       setDocumentsSearched(data || []);
     } catch {
       setErrMsg({ message: "Erreur lors de la recherche" });
+      console.log(errMsg)
     }
   };
 
@@ -88,38 +88,25 @@ const AllInvoices = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3da9fc]"></div>
+      <div className={`flex items-center justify-center min-h-screen ${isDark ? 'bg-gray-900' : ''}`}>
+        <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${isDark ? 'border-white' : 'border-[#3da9fc]'}`}></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 min-h-screen animate-in fade-in duration-500">
+    <div className={`p-6 min-h-screen animate-in fade-in duration-500 ${isDark ? 'bg-gray-900 text-gray-300' : ' text-gray-700'}`}>
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-black text-[#094067] tracking-tighter uppercase">
+          <h1 className={`text-2xl font-black tracking-tighter uppercase ${isDark ? 'text-white' : 'text-[#094067]'}`}>
             Gestion des Factures
           </h1>
-          <p className="text-[#5f6c7b] text-sm">
+          <p className={`${isDark ? 'text-gray-400' : 'text-[#5f6c7b]'} text-sm`}>
             Consulter et gérer les factures
           </p>
         </div>
-
-        <Link to="/admin/ajouter-devis">
-          <button className="bg-[#094067] hover:bg-[#3da9fc] text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg">
-            <Plus size={20} /> Créer Nouveau Devis
-          </button>
-        </Link>
       </div>
-
-      {/* Error */}
-      {errMsg.message && (
-        <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm mb-4">
-          {errMsg.message}
-        </div>
-      )}
 
       {/* Search */}
       <div className="mb-4">
@@ -128,15 +115,19 @@ const AllInvoices = () => {
           value={query}
           onChange={handleSearch}
           placeholder="Rechercher un document..."
-          className="w-full p-2.5 border border-[#90b4ce]/30 rounded-lg outline-none text-sm"
+          className={`w-full p-2.5 border rounded-lg outline-none text-sm ${
+            isDark
+              ? 'border-gray-700 bg-gray-800 text-white placeholder-gray-400 focus:ring-blue-500'
+              : 'border-[#90b4ce]/30 bg-white text-gray-700 placeholder-gray-500 focus:ring-[#3da9fc]'
+          }`}
         />
       </div>
 
       {/* Documents Table */}
-      <div className="bg-white rounded-2xl border border-[#90b4ce]/20 shadow-sm overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-[#f8fafc] border-b border-[#90b4ce]/10">
-            <tr className="text-[#90b4ce] font-black text-[10px] uppercase tracking-widest">
+      <div className={`w-full overflow-x-auto rounded-2xl border shadow-sm ${isDark ? 'border-gray-700 bg-gray-800' : 'border-[#90b4ce]/10 bg-white'}`}>
+        <table className="w-full text-left border-collapse min-w-[700px]">
+          <thead className={`${isDark ? 'bg-gray-700 border-gray-700' : 'bg-[#f8fafc] border-[#90b4ce]/10'} border-b`}>
+            <tr className={`font-black text-[10px] uppercase tracking-widest ${isDark ? 'text-gray-300' : 'text-[#90b4ce]'}`}>
               <th className="p-4">N° Document</th>
               <th className="p-4">Client / Société</th>
               <th className="p-4">Type</th>
@@ -147,36 +138,36 @@ const AllInvoices = () => {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-[#90b4ce]/5">
+          <tbody className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-[#90b4ce]/5'}`}>
             {dataSource.length > 0 ? (
               dataSource.map((doc) => (
                 <tr
                   key={doc.id}
-                  className="group hover:bg-[#90b4ce]/5 transition-colors"
+                  className={`group transition-colors ${isDark ? 'hover:bg-gray-700' : 'hover:bg-[#90b4ce]/5'}`}
                 >
-                  <td className="p-4 font-bold text-xs text-[#5f6c7b]">
+                  <td className={`p-4 font-bold text-xs ${isDark ? 'text-gray-200' : 'text-[#5f6c7b]'}`}>
                     {doc.number}
                   </td>
-                  <td className="p-4 font-bold text-[#094067]">
+                  <td className={`p-4 font-bold ${isDark ? 'text-white' : 'text-[#094067]'}`}>
                     {doc.client?.company_name}
                   </td>
                   <td className="p-4">
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                         doc.type === "delivery"
-                          ? "bg-purple-100 text-purple-700"
+                          ? isDark ? 'bg-purple-700 text-purple-200' : 'bg-purple-100 text-purple-700'
                           : doc.type === "invoice"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-blue-100 text-blue-700"
+                            ? isDark ? 'bg-green-700 text-green-200' : 'bg-green-100 text-green-700'
+                            : isDark ? 'bg-blue-700 text-blue-200' : 'bg-blue-100 text-blue-700'
                       }`}
                     >
                       {doc.type === "quote" ? "DEVIS" : doc.type}
                     </span>
                   </td>
-                  <td className="p-4 text-center text-sm font-bold text-[#5f6c7b]">
+                  <td className={`p-4 text-center text-sm font-bold ${isDark ? 'text-gray-200' : 'text-[#5f6c7b]'}`}>
                     {doc.items?.reduce((s, l) => s + Number(l.qtte), 0)}
                   </td>
-                  <td className="p-4 text-sm font-black text-[#094067]">
+                  <td className={`p-4 text-sm font-black ${isDark ? 'text-white' : 'text-[#094067]'}`}>
                     {doc.totale?.toLocaleString("fr-FR")} DH
                   </td>
                   <td className="p-4">
@@ -188,12 +179,12 @@ const AllInvoices = () => {
                       disabled={loadingId === doc.id}
                       className={`p-2 border rounded w-full text-sm ${
                         doc.status === "annulé"
-                          ? "bg-red-100 text-red-700"
-                          : doc.status === "validé" ||
-                            doc.status === "payée" ||
-                            doc.status === "livré"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
+                          ? isDark ? 'bg-red-700 text-red-200' : 'bg-red-100 text-red-700'
+                          : doc.status === "livré"
+                          ? isDark ? 'bg-blue-700 text-blue-200' : 'bg-blue-100 text-blue-600'
+                          : doc.status === "validé" || doc.status === "payée"
+                          ? isDark ? 'bg-green-700 text-green-200' : 'bg-green-100 text-green-700'
+                          : isDark ? 'bg-yellow-700 text-yellow-200' : 'bg-yellow-100 text-yellow-700'
                       } ${loadingId === doc.id ? "opacity-50 cursor-wait" : ""}`}
                     >
                       {statusOptions[doc.type]?.map((s) => (
@@ -204,30 +195,20 @@ const AllInvoices = () => {
                     </select>
                   </td>
                   <td className="p-4 text-right">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {doc.type === "quote" && (
-                        <Link to={`/admin/modifier-produit/${doc.id}`}>
-                          <button className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg">
-                            <Edit size={16} />
-                          </button>
-                        </Link>
-                      )}
+                    <div className="flex justify-end gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
 
-                      <Link to={`/admin/documents/${doc.id}`}>
-                        <button className="p-1.5 text-[#3da9fc] hover:bg-[#3da9fc]/10 rounded-lg">
+                      <Link to={`/comptable/documents/${doc.id}`}>
+                        <button className={`p-1.5 rounded-lg ${isDark ? 'text-blue-300 hover:bg-blue-600/20' : 'text-[#3da9fc] hover:bg-[#3da9fc]/10'}`}>
                           <Eye size={16} />
                         </button>
                       </Link>
-
                       <PDFDownloadLink
                         document={<DocumentPDF doc={doc} />}
-                        fileName={`${doc.category}_${doc.number}.pdf`}
+                        fileName={`${doc.type}_${doc.number}.pdf`}
                       >
-                        {({ loading }) => (
-                          <button className="p-1.5 text-[#e11d48] hover:bg-rose-50 rounded-lg">
-                            <Download size={16} />
-                          </button>
-                        )}
+                        <button className={`p-1.5 rounded-lg ${isDark ? 'text-red-300 hover:bg-red-600/20' : 'text-[#e11d48] hover:bg-rose-50'}`}>
+                          <Download size={16} />
+                        </button>
                       </PDFDownloadLink>
                     </div>
                   </td>
@@ -235,7 +216,7 @@ const AllInvoices = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="p-6 text-center text-gray-400">
+                <td colSpan="7" className={`p-6 text-center ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>
                   Aucun document trouvé
                 </td>
               </tr>

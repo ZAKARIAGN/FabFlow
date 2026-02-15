@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./compenet/ProtectedRoute";
+import { useState,useEffect } from "react";
 
 // Pages
 import Login from "./pages/login";
@@ -29,70 +30,90 @@ import UsersList from "./pages/users";
 import FormUsers from "./pages/usersForm";
 import UpdateUserForm from "./pages/UpdateUser";
 import ProduitsView from "./pages/ListProduits";
-
 function App() {
+    
+  const [isDark, setIsDark] = useState(() => {
+      return localStorage.getItem('theme') === 'dark';
+    });
+  
+   
+    useEffect(() => {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    }, [isDark]);
+    
   return (
     <>
-      <ToastContainer />
+
+      
 
       <Routes>
         {/* Auth */}
         <Route path="/login" element={<Login />} />
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route path="ajouter-utilisateur" element={<FormUsers />} />
-            <Route path="users" element={<UsersList />} />
-            <Route path="update-user/:id" element={<UpdateUserForm />} />
+          
+          <Route path="/admin" element={<AdminLayout isDark={isDark} setIsDark={setIsDark}/>}>
+            <Route path="ajouter-utilisateur" element={<FormUsers isDark={isDark}  />} />
+            <Route path="users" element={<UsersList isDark={isDark} />} />
+            <Route path="update-user/:id" element={<UpdateUserForm isDark={isDark} />} />
             <Route index element={<Navigate to="dashboard" />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="clients" element={<Clients />} />
-            <Route path="ajouter-client" element={<ClientForm />} />
-            <Route path="modifier-client/:id" element={<UpdateClient />} />
-            <Route path="produits" element={<Produits />} />
-            <Route path="ajouter-produit" element={<ProduitForm />} />
-            <Route path="modifier-produit/:id" element={<UpdateProduit />} />
-            <Route path="documents" element={<AllDocuments />} />
-            <Route path="ajouter-devis" element={<DevisForm />} />
-            <Route path="modifier-produit/:id" element={<PageUpdateDevis />} />
-            <Route path="documents/:id" element={<DocumentView />} />
-            <Route path="picking-bl" element={<PagePicking />} />
-            <Route path="picking-factures" element={<PagePickingInvoice />} />
+            <Route path="dashboard" element={<Dashboard isDark={isDark} />} />
+            <Route path="clients" element={<Clients isDark={isDark}/>}  />
+            <Route path="ajouter-client" element={<ClientForm isDark={isDark} />} />
+            <Route path="modifier-client/:id" element={<UpdateClient isDark={isDark} />} />
+            <Route path="produits" element={<Produits isDark={isDark} />} />
+            <Route path="ajouter-produit" element={<ProduitForm isDark={isDark} />} />
+            <Route path="modifier-produit/:id" element={<UpdateProduit isDark={isDark} />} />
+            <Route path="documents" element={<AllDocuments isDark={isDark} />} />
+            <Route path="ajouter-devis" element={<DevisForm isDark={isDark} />} />
+            <Route path="modifier-devis/:id" element={<PageUpdateDevis isDark={isDark} />} />
+            <Route path="documents/:id" element={<DocumentView isDark={isDark} />} />
+            <Route path="picking-bl" element={<PagePicking isDark={isDark} />} />
+            <Route path="picking-factures" element={<PagePickingInvoice isDark={isDark} />} />
           </Route>
 
-          <Route path="/commercial" element={<CommercialLayout />}>
+          <Route path="/commercial" element={<CommercialLayout isDark={isDark} setIsDark={setIsDark}/>}>
+            {/*<Navbar title={"commercial"}/>*/}
             <Route index element={<Navigate to="dashboard" />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="clients" element={<Clients />} />
-            <Route path="ajouter-client" element={<ClientForm />} />
-            <Route path="modifier-client/:id" element={<UpdateClient />} />
-            <Route path="produits" element={<Produits />} />
-            <Route path="ajouter-produit" element={<ProduitForm />} />
-            <Route path="modifier-produit/:id" element={<UpdateProduit />} />
-            <Route path="devis" element={<AllDevis />} />
-            <Route path="ajouter-devis" element={<DevisForm />} />
-            <Route path="modifier-produit/:id" element={<PageUpdateDevis />} />
-            <Route path="documents/:id" element={<DocumentView />} />
+            <Route path="dashboard" element={<Dashboard isDark={isDark}  />} />
+            <Route path="clients" element={<Clients isDark={isDark} />} />
+            <Route path="ajouter-client" element={<ClientForm isDark={isDark} />} />
+            <Route path="modifier-client/:id" element={<UpdateClient isDark={isDark} />} />
+            <Route path="produits" element={<Produits isDark={isDark} />} />
+            <Route path="ajouter-produit" element={<ProduitForm isDark={isDark} />} />
+            <Route path="modifier-produit/:id" element={<UpdateProduit isDark={isDark} />} />
+            <Route path="devis" element={<AllDevis isDark={isDark} />} />
+            <Route path="ajouter-devis" element={<DevisForm isDark={isDark} />} />
+            <Route path="modifier-devis/:id" element={<PageUpdateDevis isDark={isDark} />} />
+            <Route path="documents/:id" element={<DocumentView isDark={isDark} />} />
           </Route>
 
-          <Route path="/atelier" element={<AtelierLayout />}>
-            <Route index element={<Navigate to="dashboard" />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="clients" element={<Clients />} />
-            <Route path="produits" element={<ProduitsView />} />
-            <Route path="BL" element={<AllDeliveries />} />
-            <Route path="documents/:id" element={<DocumentView />} />
-            <Route path="picking-bl" element={<PagePicking />} />
+          <Route path="/atelier" element={<AtelierLayout isDark={isDark} setIsDark={setIsDark}/>}>
+            {/* <Navbar title={"atelier"}/>*/}
+            <Route index element={<Navigate to="dashboard" isDark={isDark} />} />
+            <Route path="dashboard" element={<Dashboard isDark={isDark} />} />
+            <Route path="clients" element={<Clients isDark={isDark}/>}  />
+            <Route path="produits" element={<ProduitsView isDark={isDark} />} />
+            <Route path="BL" element={<AllDeliveries isDark={isDark}/>}  />
+            <Route path="documents/:id" element={<DocumentView isDark={isDark} />} />
+            <Route path="picking-bl" element={<PagePicking isDark={isDark}/>}  />
           </Route>
 
-          <Route path="/comptable" element={<COmptableLayout />}>
-            <Route index element={<Navigate to="dashboard" />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="clients" element={<Clients />} />
-            <Route path="produits" element={<ProduitsView />} />
-            <Route path="factures" element={<AllInvoices />} />
-            <Route path="documents/:id" element={<DocumentView />} />
-            <Route path="picking-factures" element={<PagePickingInvoice />} />
+          <Route path="/comptable" element={<COmptableLayout isDark={isDark} setIsDark={setIsDark}/>}>
+           {/* <Navbar title={"comptable"}/>*/} 
+            <Route index element={<Navigate to="dashboard" isDark={isDark} />} />
+            <Route path="dashboard" element={<Dashboard isDark={isDark} />} />
+            <Route path="clients" element={<Clients isDark={isDark}/>}/>
+            <Route path="produits" element={<ProduitsView isDark={isDark} />} />
+            <Route path="factures" element={<AllInvoices isDark={isDark}/>}  />
+            <Route path="documents/:id" element={<DocumentView isDark={isDark} />} />
+            <Route path="picking-factures" element={<PagePickingInvoice isDark={isDark} />} />
           </Route>
         </Route>
 

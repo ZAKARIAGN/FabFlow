@@ -1,4 +1,4 @@
-import { toast } from "react-toastify";
+
 import Api from "./api";
 import { HandleErr } from "../compenet/HAndleErr";
 
@@ -23,14 +23,7 @@ export const GetValideDeliveries = async (setErr) => {
 
 export const AddDeliveries = async (QuoteID,delivery, setErr,navigate) => {
   try {
-    const res = await Api.post(`/deliveries/${QuoteID}`, delivery);
-    toast.success(res.data.message || "Registration successful!", {
-      style: {
-        width: "400px",
-        height: "100px",
-        fontSize: "16px",
-      },
-    });
+    await Api.post(`/deliveries/${QuoteID}`, delivery);
     navigate(-1);
 
   } catch (err) {

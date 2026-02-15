@@ -3,7 +3,7 @@ import { useState } from "react";
 import { AddProduit } from "../services/ProduitService";
 import ErrMsg from "../compenet/ErrMsg";
 
-const ProduitForm = () => {
+const ProduitForm = ({ isDark }) => {
   const navigate = useNavigate();
   const [errMsg, setErrMsg] = useState({});
 
@@ -29,15 +29,28 @@ const ProduitForm = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-[#90b4ce]/20 shadow-sm">
-      <h2 className="text-lg font-bold text-[#094067] mb-6 border-b pb-2">
+    <div
+      className={`p-6 rounded-xl border shadow-sm ${
+        isDark
+          ? "bg-[#111827] border-slate-700"
+          : "bg-white border-[#90b4ce]/20"
+      }`}
+    >
+      <h2
+        className={`text-lg font-bold mb-6 border-b pb-2 ${
+          isDark ? "text-white border-slate-700" : "text-[#094067]"
+        }`}
+      >
         Détails du Produit / Service
       </h2>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
-        {/* Désignation */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+          <label
+            className={`text-xs font-bold uppercase ${
+              isDark ? "text-slate-400" : "text-[#5f6c7b]"
+            }`}
+          >
             Désignation
           </label>
           <input
@@ -45,21 +58,32 @@ const ProduitForm = () => {
             value={ProduitsInfo.label}
             onChange={HandleChange}
             type="text"
-            className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+            className={`w-full p-2.5 border rounded-lg outline-none text-sm focus:border-[#3da9fc] ${
+              isDark
+                ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                : "bg-[#f8fafc] border-[#90b4ce]/30 text-black"
+            }`}
           />
           <ErrMsg msg={errMsg.errors?.label?.[0]} />
         </div>
 
-        {/* Type */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+          <label
+            className={`text-xs font-bold uppercase ${
+              isDark ? "text-slate-400" : "text-[#5f6c7b]"
+            }`}
+          >
             Type
           </label>
           <select
             name="type"
             value={ProduitsInfo.type}
             onChange={HandleChange}
-            className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+            className={`w-full p-2.5 border rounded-lg outline-none text-sm focus:border-[#3da9fc] ${
+              isDark
+                ? "bg-slate-800 border-slate-700 text-white"
+                : "bg-[#f8fafc] border-[#90b4ce]/30 text-black"
+            }`}
           >
             <option value="">Choisir le type</option>
             <option value="fabriqué">Fabriqué</option>
@@ -70,9 +94,12 @@ const ProduitForm = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Prix */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+            <label
+              className={`text-xs font-bold uppercase ${
+                isDark ? "text-slate-400" : "text-[#5f6c7b]"
+              }`}
+            >
               Prix
             </label>
             <input
@@ -80,14 +107,21 @@ const ProduitForm = () => {
               value={ProduitsInfo.prix}
               onChange={HandleChange}
               type="number"
-              className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+              className={`w-full p-2.5 border rounded-lg outline-none text-sm focus:border-[#3da9fc] ${
+                isDark
+                  ? "bg-slate-800 border-slate-700 text-white"
+                  : "bg-[#f8fafc] border-[#90b4ce]/30 text-black"
+              }`}
             />
             <ErrMsg msg={errMsg.errors?.prix?.[0]} />
           </div>
 
-          {/* Stock */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+            <label
+              className={`text-xs font-bold uppercase ${
+                isDark ? "text-slate-400" : "text-[#5f6c7b]"
+              }`}
+            >
               Stock
             </label>
             <input
@@ -96,21 +130,32 @@ const ProduitForm = () => {
               onChange={HandleChange}
               type="number"
               disabled={ProduitsInfo.type !== "fabriqué"}
-              className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm disabled:bg-gray-100"
+              className={`w-full p-2.5 border rounded-lg outline-none text-sm focus:border-[#3da9fc] ${
+                isDark
+                  ? "bg-slate-800 border-slate-700 text-white disabled:bg-slate-900 disabled:text-slate-500"
+                  : "bg-[#f8fafc] border-[#90b4ce]/30 text-black disabled:bg-gray-100"
+              }`}
             />
             <ErrMsg msg={errMsg.errors?.stock?.[0]} />
           </div>
 
-          {/* Unité */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+            <label
+              className={`text-xs font-bold uppercase ${
+                isDark ? "text-slate-400" : "text-[#5f6c7b]"
+              }`}
+            >
               Unité
             </label>
             <select
               name="unite"
               value={ProduitsInfo.unite}
               onChange={HandleChange}
-              className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+              className={`w-full p-2.5 border rounded-lg outline-none text-sm focus:border-[#3da9fc] ${
+                isDark
+                  ? "bg-slate-800 border-slate-700 text-white"
+                  : "bg-[#f8fafc] border-[#90b4ce]/30 text-black"
+              }`}
             >
               <option value="">Choisir une unité</option>
               <option value="Pièce">Pièce</option>
@@ -122,11 +167,14 @@ const ProduitForm = () => {
           </div>
         </div>
 
-        {/* Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        <div className="flex justify-end gap-3 pt-4">
           <button
-          onClick={()=>navigate(-1)}
-            className="px-6 py-2 text-[#5f6c7b] hover:bg-gray-100 rounded-lg"
+            onClick={() => navigate(-1)}
+            className={`px-6 py-2 rounded-lg transition-colors ${
+              isDark
+                ? "text-slate-300 hover:bg-slate-800"
+                : "text-[#5f6c7b] hover:bg-gray-100"
+            }`}
           >
             Annuler
           </button>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { toast } from "react-toastify";
+
 import { updateStatusQuotes } from "../services/QuoteService";
 import { updateStatusDeliveries } from "../services/DeliveryService";
 import { updateStatusInvoices } from "../services/InvoiceService";
@@ -29,9 +29,9 @@ const DocumentStatus = ({ doc, onStatusUpdated, loadingId, role }) => {
       }
 
       onStatusUpdated(doc.id, newStatus);
-      toast.success(`Status mis à jour: ${newStatus}`);
+      
     } catch (err) {
-      toast.error("Erreur lors de la mise à jour du status");
+      
       console.error(err);
     } finally {
       setLoading(false);

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { GetClientById, UpdateClientByID } from "../services/ClientsService";
 import ErrMsg from "../compenet/ErrMsg";
 
-const UpdateClient = () => {
+const UpdateClient = ({ isDark }) => {
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -47,16 +47,29 @@ const UpdateClient = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-[#90b4ce]/20 shadow-sm">
-      <h2 className="text-lg font-bold text-[#094067] mb-6 border-b pb-2">
+    <div
+      className={`p-6 rounded-xl border shadow-sm ${
+        isDark
+          ? "bg-[#111827] border-slate-700"
+          : "bg-white border-[#90b4ce]/20"
+      }`}
+    >
+      <h2
+        className={`text-lg font-bold mb-6 border-b pb-2 ${
+          isDark ? "text-white border-slate-700" : "text-[#094067]"
+        }`}
+      >
         Informations Client
       </h2>
 
       <form className="space-y-4" onSubmit={handleUpdate}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Vat Number */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+            <label
+              className={`text-xs font-bold uppercase ${
+                isDark ? "text-slate-400" : "text-[#5f6c7b]"
+              }`}
+            >
               Vat Number
             </label>
             <input
@@ -65,14 +78,21 @@ const UpdateClient = () => {
               value={clientInfos.vat_number}
               name="vat_number"
               placeholder="Ex: 29193128912"
-              className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+              className={`w-full p-2.5 border rounded-lg outline-none text-sm focus:border-[#3da9fc] ${
+                isDark
+                  ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                  : "bg-[#f8fafc] border-[#90b4ce]/30 text-black"
+              }`}
             />
             <ErrMsg msg={errMsg.errors?.vat_number?.[0]} />
           </div>
 
-          {/* Company Name */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+            <label
+              className={`text-xs font-bold uppercase ${
+                isDark ? "text-slate-400" : "text-[#5f6c7b]"
+              }`}
+            >
               Nom du Client / Raison Sociale
             </label>
             <input
@@ -81,14 +101,21 @@ const UpdateClient = () => {
               value={clientInfos.company_name}
               name="company_name"
               placeholder="Ex: Sodal Maghreb"
-              className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+              className={`w-full p-2.5 border rounded-lg outline-none text-sm focus:border-[#3da9fc] ${
+                isDark
+                  ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                  : "bg-[#f8fafc] border-[#90b4ce]/30 text-black"
+              }`}
             />
             <ErrMsg msg={errMsg.errors?.company_name?.[0]} />
           </div>
 
-          {/* Email */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+            <label
+              className={`text-xs font-bold uppercase ${
+                isDark ? "text-slate-400" : "text-[#5f6c7b]"
+              }`}
+            >
               Email de contact
             </label>
             <input
@@ -97,14 +124,21 @@ const UpdateClient = () => {
               value={clientInfos.email}
               name="email"
               placeholder="client@mail.com"
-              className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+              className={`w-full p-2.5 border rounded-lg outline-none text-sm focus:border-[#3da9fc] ${
+                isDark
+                  ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                  : "bg-[#f8fafc] border-[#90b4ce]/30 text-black"
+              }`}
             />
             <ErrMsg msg={errMsg.errors?.email?.[0]} />
           </div>
 
-          {/* Tel */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+            <label
+              className={`text-xs font-bold uppercase ${
+                isDark ? "text-slate-400" : "text-[#5f6c7b]"
+              }`}
+            >
               Numero Tel
             </label>
             <input
@@ -113,15 +147,22 @@ const UpdateClient = () => {
               value={clientInfos.tel}
               name="tel"
               placeholder="Ex: 0622017665"
-              className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+              className={`w-full p-2.5 border rounded-lg outline-none text-sm focus:border-[#3da9fc] ${
+                isDark
+                  ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                  : "bg-[#f8fafc] border-[#90b4ce]/30 text-black"
+              }`}
             />
             <ErrMsg msg={errMsg.errors?.tel?.[0]} />
           </div>
         </div>
 
-        {/* Address */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-[#5f6c7b] uppercase">
+          <label
+            className={`text-xs font-bold uppercase ${
+              isDark ? "text-slate-400" : "text-[#5f6c7b]"
+            }`}
+          >
             Adresse Complète
           </label>
           <textarea
@@ -129,15 +170,23 @@ const UpdateClient = () => {
             value={clientInfos.address}
             name="address"
             rows="2"
-            className="w-full p-2.5 bg-[#f8fafc] border border-[#90b4ce]/30 rounded-lg focus:border-[#3da9fc] outline-none text-sm"
+            className={`w-full p-2.5 border rounded-lg outline-none text-sm focus:border-[#3da9fc] ${
+              isDark
+                ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                : "bg-[#f8fafc] border-[#90b4ce]/30 text-black"
+            }`}
           ></textarea>
           <ErrMsg msg={errMsg.errors?.address?.[0]} />
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
           <button
-            onClick={() => navigate(-1)}
-            className="px-6 py-2 text-[#5f6c7b] font-medium hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => navigate("")}
+            className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+              isDark
+                ? "text-slate-300 hover:bg-slate-800"
+                : "text-[#5f6c7b] hover:bg-gray-100"
+            }`}
           >
             Annuler
           </button>

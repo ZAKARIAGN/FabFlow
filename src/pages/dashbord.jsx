@@ -7,7 +7,7 @@ import { GetValideQuotes } from "../services/QuoteService";
 import { GetValideDeliveries } from "../services/DeliveryService";
 import { GetSumInvoice } from "../services/InvoiceService";
 
-const Dashboard = () => {
+const Dashboard = ({isDark}) => {
   const [stats, setStats] = useState({
     totalPaidInvoices: 0,
     countValidQuotes: 0,
@@ -58,7 +58,7 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className={`${isDark? 'bg-[#0f172a]' : ''} flex items-center justify-center min-h-screen `}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Chargement du tableau de bord...</p>
@@ -69,7 +69,7 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className={`${isDark? 'bg-[#0f172a]' : 'bg-gray-50'} flex items-center justify-center min-h-screen `}>
         <div className="text-center bg-white p-8 rounded-lg shadow-lg">
           <svg
             className="w-16 h-16 text-red-500 mx-auto mb-4"
@@ -95,19 +95,34 @@ const Dashboard = () => {
       </div>
     );
   }
+  const lightStyles = {
+    mainContainer: "min-h-screen w-full bg-white transition-colors duration-300",
+    card: "bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4",
+    textMain: "text-gray-800",
+    textMuted: "text-gray-500",
+    row: "bg-gray-50 hover:bg-gray-100 border-transparent"
+  }
 
+  const darkStyles = {
+    mainContainer: "min-h-screen w-full bg-[#0f172a] transition-colors duration-300",
+    card: "bg-[#1e293b] p-6 rounded-xl shadow-sm border border-gray-700/50 border-l-4",
+    textMain: "text-white",
+    textMuted: "text-gray-400",
+    row: "bg-[#0f172a]/50 hover:bg-gray-800/50 border-gray-700/30"
+  };
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Tableau de Bord</h1>
+    <div className={` ${isDark ? darkStyles.mainContainer  : lightStyles.mainContainer } 
+    `}>
+      <h1 className={`${isDark ? darkStyles.textMain : lightStyles.textMain} text-3xl font-bold text-gray-800 mb-8`}>Tableau de Bord</h1>
 
       {/* Cartes de statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Total Invoices Payées */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+        <div className={`${isDark ? darkStyles.card : 'bg-white rounded-lg shadow p-6 border-l-4 border-green-500 '}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Invoices Payées</p>
-              <p className="text-2xl font-bold text-gray-800">
+              <p className={`${isDark ? darkStyles.textMain : 'text-gray-600'} text-sm mb-1`}>Invoices Payées</p>
+              <p className={`${isDark ? darkStyles.textMain : 'text-gray-800'} text-2xl font-bold `}>
                 {stats.totalPaidInvoices.toLocaleString("fr-MA")} DH
               </p>
             </div>
@@ -130,14 +145,14 @@ const Dashboard = () => {
         </div>
 
         {/* Nombre de Devis Validés */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+        <div className={ `${isDark ? darkStyles.card :'bg-white rounded-lg shadow p-6 border-l-4 border-blue-500'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Devis Validés</p>
-              <p className="text-2xl font-bold text-gray-800">
+              <p className={`${isDark ? darkStyles.textMain : 'text-gray-600'} text-sm mb-1`}>Devis Validés</p>
+              <p className= {`${isDark ? darkStyles.textMain : 'text-gray-800'} text-2xl font-bold `}>
                 {stats.countValidQuotes}
               </p>
-              <p className="text-xs text-gray-500 mt-1">Documents</p>
+              <p className={`${isDark ? darkStyles.textMain : 'text-gray-500 text-xs mt-1' }`}>Documents</p>
             </div>
             <div className="bg-blue-100 p-3 rounded-full">
               <svg
@@ -158,14 +173,14 @@ const Dashboard = () => {
         </div>
 
         {/* Nombre de BL Livrés */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+        <div className={`${isDark ? darkStyles.card :"bg-white rounded-lg shadow p-6 border-l-4 border-purple-500"}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">BL Livrés</p>
-              <p className="text-2xl font-bold text-gray-800">
+              <p className={`${isDark ? darkStyles.textMain : 'text-gray-600'} text-sm mb-1`}>BL Livrés</p>
+              <p className={`${isDark ? darkStyles.textMain : 'text-gray-800'} text-2xl font-bold `}>
                 {stats.countDelivered}
               </p>
-              <p className="text-xs text-gray-500 mt-1">Documents</p>
+              <p className={`${isDark ? darkStyles.textMain : 'text-gray-500 text-xs mt-1' }`}>Documents</p>
             </div>
             <div className="bg-purple-100 p-3 rounded-full">
               <svg
@@ -186,14 +201,14 @@ const Dashboard = () => {
         </div>
 
         {/* Total Clients */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+        <div className={`${isDark? darkStyles.card : "bg-white rounded-lg shadow p-6 border-l-4 border-orange-500"}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Clients</p>
-              <p className="text-2xl font-bold text-gray-800">
+              <p className={`${isDark ? darkStyles.textMain : 'text-gray-600'} text-sm mb-1`}>Total Clients</p>
+              <p className={`${isDark ? darkStyles.textMain : 'text-gray-800'} text-2xl font-bold `}>
                 {stats.totalClients}
               </p>
-              <p className="text-xs text-gray-500 mt-1">Clients actifs</p>
+              <p className={`${isDark ? darkStyles.textMain : 'text-gray-500 text-xs mt-1' }`}>Clients actifs</p>
             </div>
             <div className="bg-orange-100 p-3 rounded-full">
               <svg
@@ -215,10 +230,10 @@ const Dashboard = () => {
       </div>
 
       {/* Top 5 Clients */}
-      <div className="bg-white rounded-lg shadow">
+      <div className={`${isDark? 'bg-[#1e293b] rounded-lg shadow' : 'bg-white rounded-lg shadow'}`}>
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800">Top 5 Clients</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className={`${isDark?'text-white':'text-gray-800'} text-xl font-bold`}>Top 5 Clients</h2>
+          <p className={`${isDark?'text-white':'text-gray-600'} text-sm `}>
             Classement par invoices payées
           </p>
         </div>

@@ -1,57 +1,60 @@
-// src/components/SidebarAdmin.jsx
 import { NavLink } from "react-router-dom";
 
-const SidebarAdmin = () => {
+const SidebarAdmin = ({isOpen,setIsOpen}) => {
   const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-3 rounded-lg transition 
+    `flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all duration-300
      ${
        isActive
-         ? "bg-blue-600 text-white"
-         : "text-gray-300 hover:bg-slate-700 hover:text-white"
+          ? "bg-[#3da9fc] text-white shadow-lg shadow-[#3da9fc]/20"
+          : "text-[#90b4ce] hover:bg-[#fffffe]/5 hover:text-white"
      }`;
+  
+  const pStyle = "text-[10px] text-[#5f6c7b] font-black uppercase tracking-[0.2em] mt-10 px-3 opacity-60";
 
   return (
-    <aside className="w-64 min-h-screen bg-slate-800 p-5">
+   
+    <aside className={`
+      fixed lg:sticky top-0 left-0 h-screen w-64 bg-[#071c2c] flex flex-col z-40 rounded-tr-4xl transition-transform duration-300 ease-in-out
+      ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+    `}>
       {/* Logo / Title */}
-      <h1 className="text-2xl font-bold text-white text-center mb-10">
-        Admin Panel
-      </h1>
+      <div className="p-8 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-[#3da9fc] rounded-lg flex items-center justify-center shadow-lg shadow-[#3da9fc]/30">
+            <span className="text-white font-black italic">F</span>
+          </div>
+          <h1 className="text-xl font-black text-white tracking-tighter uppercase">FabFlow</h1>
+        </div>
+        {/* Close button only for mobile */}
+        <button className="lg:hidden text-white" onClick={() => setIsOpen(false)}>✕</button>
+      </div>
 
       {/* Menu */}
-      <nav className="flex flex-col gap-2">
-        {/* Dashboard */}
+      <nav className="flex-1 px-4 overflow-y-auto space-y-2 pb-10">
+        <p className={pStyle}>Main Menu</p>
         <NavLink to="/admin/dashboard" className={linkClass}>
-          <span>📊</span>
           <span>Dashboard</span>
         </NavLink>
 
+        <p className={pStyle}>Référentiel</p>
         <NavLink to="/admin/clients" className={linkClass}>
-          <span>👤</span>
           <span>Clients</span>
         </NavLink>
-
         <NavLink to="/admin/produits" className={linkClass}>
-          <span>📦</span>
           <span>Produits</span>
         </NavLink>
 
+        <p className={pStyle}>Opérations</p>
         <NavLink to="/admin/documents" className={linkClass}>
-          <span>📄</span>
           <span>Documents</span>
         </NavLink>
-
         <NavLink to="/admin/picking-bl" className={linkClass}>
-          <span>🧾</span>
           <span>Picking BL</span>
         </NavLink>
-
         <NavLink to="/admin/picking-factures" className={linkClass}>
-          <span>🧮</span>
           <span>Picking Factures</span>
         </NavLink>
-
         <NavLink to="/admin/users" className={linkClass}>
-          <span>👥</span>
           <span>Gestion Comptes</span>
         </NavLink>
       </nav>
