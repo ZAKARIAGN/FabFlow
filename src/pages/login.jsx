@@ -13,6 +13,9 @@ const Login = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUserData({ ...userData, [name]: value });
+    if (Object.keys(errMsg).length > 0) {
+      setErrMsg({});
+    }
   };
 
   const handleLogin = async (e) => {
@@ -53,7 +56,10 @@ const Login = () => {
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 text-[#90b4ce]" size={18} />
+                <Mail
+                  className="absolute left-3 top-3 text-[#90b4ce]"
+                  size={18}
+                />
                 <input
                   type="email"
                   name="email"
@@ -62,6 +68,7 @@ const Login = () => {
                   placeholder="admin@fabflow.ma"
                   className="w-full pl-10 pr-4 py-3 border rounded-xl border-[#90b4ce]/30 focus:border-[#3da9fc] outline-none text-sm"
                   disabled={loading}
+                  autoComplete="email"
                   required
                 />
                 <ErrMsg msg={errMsg.errors?.email?.[0]} />
@@ -74,7 +81,10 @@ const Login = () => {
                 Mot de passe
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 text-[#90b4ce]" size={18} />
+                <Lock
+                  className="absolute left-3 top-3 text-[[#90b4ce]"
+                  size={18}
+                />
                 <input
                   type="password"
                   name="password"
@@ -83,6 +93,7 @@ const Login = () => {
                   placeholder="••••••••"
                   className="w-full pl-10 pr-4 py-3 border rounded-xl border-[#90b4ce]/30 focus:border-[#3da9fc] outline-none text-sm"
                   disabled={loading}
+                  autoComplete="current-password"
                   required
                 />
                 <ErrMsg msg={errMsg.errors?.password?.[0]} />

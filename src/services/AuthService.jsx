@@ -2,35 +2,44 @@ import Api from "./api";
 import Cookies from "js-cookie";
 import { HandleErr } from "../compenet/HAndleErr";
 
-export const RegisterService = async (user, setErr,navigate) => {
+export const RegisterService = async (user, setErr, navigate) => {
   try {
     await Api.post("/register", user);
-    
-
-
-    navigate(-1)
-
+    navigate(-1);
   } catch (err) {
-    HandleErr(err,setErr)
+    HandleErr(err, setErr);
   }
 };
 
-
-
-
-
-
 export const LoginService = async (user, setErrMsg, navigate) => {
   try {
-    const res =await Api.post("/login", user);
+    console.log("🔵 Tentative de connexion...", user);
 
+    const res = await Api.post("/login", user);
 
-    Cookies.set("token", res.data.user.token, { expires: 7, path: "/" });
-    setTimeout(() => {
-      navigate(res.data.redirect_to);
-    }, 1000);
+    const { token, role } = res.data.user;
+    const redirectTo = res.data.redirect_to;
+
+    console.log("🔀 Redirection vers:", redirectTo);
+
+    Cookies.set("token", token, { expires: 7, path: "/" });
+    Cookies.set("role", role, { expires: 7, path: "/" });
+
+    navigate(redirectTo);
   } catch (err) {
     HandleErr(err, setErrMsg);
+  }
+};
+
+export const LogoutService = async (navigate) => {
+  try {
+    await Api.post("/logout");
+  } catch (err) {
+    console.error("Logout error", err);
+  } finally {
+    Cookies.remove("token", { path: "/" });
+    Cookies.remove("role", { path: "/" });
+    navigate("/login");
   }
 };
 
@@ -42,16 +51,13 @@ export const GetAllUsers = async (setErr) => {
     HandleErr(err, setErr);
   }
 };
-
-
-export const DeleteUser = async (userID,setErr)=>{
-  try{
-  await Api.delete(`/users/${userID}`) 
-
-  }catch(err){
-    HandleErr(err,setErr)
+export const DeleteUser = async (userID, setErr) => {
+  try {
+    await Api.delete(`/users/${userID}`);
+  } catch (err) {
+    HandleErr(err, setErr);
   }
-}
+};
 
 export const GetUserByID = async (id, setErr) => {
   try {
@@ -64,8 +70,6 @@ export const GetUserByID = async (id, setErr) => {
   }
 };
 
-
-
 export const UpdateUserByID = async (id, data, setErr, navigate) => {
   try {
     await Api.put(`/users/${id}`, data);
@@ -74,4 +78,3 @@ export const UpdateUserByID = async (id, data, setErr, navigate) => {
     HandleErr(err, setErr);
   }
 };
-

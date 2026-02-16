@@ -1,6 +1,8 @@
 import { Bell, UserCircle, Sun, Moon } from "lucide-react";
 import { LuLogOut } from "react-icons/lu";
 import { GiHamburgerMenu } from "react-icons/gi";
+import { LogoutService } from "../services/AuthService";
+import { useNavigate } from "react-router";
 
 const IconButton = ({ children, className = "", onClick, isDark }) => (
   <button
@@ -16,9 +18,7 @@ const IconButton = ({ children, className = "", onClick, isDark }) => (
 );
 
 const Navbar = ({ title, toggleSidebar, isDark, setIsDark }) => {
-  const handleLogout = () => {
-    //
-  };
+  const navigate = useNavigate()
 
   return (
     <header
@@ -27,7 +27,7 @@ const Navbar = ({ title, toggleSidebar, isDark, setIsDark }) => {
       } h-20 px-4 lg:px-8 flex items-center justify-between sticky top-0 z-10 border-b border-[#90b4ce]/10`}
     >
       <button
-        onClick={handleLogout}
+        onClick={()=>LogoutService(navigate)}
         className="hidden lg:block  cursor-pointer text-[10px] sm:text-xs font-bold text-red-500 hover:text-red-700 transition-colors"
       >
         Déconnexion
@@ -39,7 +39,7 @@ const Navbar = ({ title, toggleSidebar, isDark, setIsDark }) => {
 
       <div className="flex items-center space-x-2 sm:space-x-3">
         <div className="flex items-center space-x-2">
-          <IconButton className="lg:hidden" isDark={isDark}>
+          <IconButton className="lg:hidden" isDark={isDark} onClick={() => LogoutService(navigate)}>
             <LuLogOut size={18} />
           </IconButton>
 
