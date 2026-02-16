@@ -11,13 +11,13 @@ const PageDeliveries = ({ isDark }) => {
   const [quotes, setQuotes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const [searching, setSearching] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errMsg, setErrMsg] = useState({});
 
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [items, setItems] = useState([]);
 
+  // ✅ Load initial quotes
   useEffect(() => {
     const fetchQuotes = async () => {
       setLoading(true);
@@ -33,36 +33,31 @@ const PageDeliveries = ({ isDark }) => {
     fetchQuotes();
   }, []);
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      setLoading(true);
+  // ✅ Search automatique nichan
+  useEffect(() => {
+    const delaySearch = setTimeout(async () => {
+      if (!searchTerm.trim()) {
+        // Si search vide, charger tous les quotes
+        try {
+          const data = await GetValideQuotes(setErrMsg);
+          setQuotes(data || []);
+        } catch (err) {
+          console.error(err);
+        }
+        return;
+      }
+
+      // Sinon, faire la recherche
       try {
-        const data = await GetValideQuotes(setErrMsg);
+        const data = await SearchValideQuote(searchTerm, setErrMsg);
         setQuotes(data || []);
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoading(false);
       }
-      return;
-    }
+    }, 500); // ✅ Debounce de 500ms
 
-    setSearching(true);
-    try {
-      const data = await SearchValideQuote(searchTerm, setErrMsg);
-      setQuotes(data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
+    return () => clearTimeout(delaySearch);
+  }, [searchTerm]);
 
   const selectQuote = (quote) => {
     setSelectedQuote(quote);
@@ -71,7 +66,7 @@ const PageDeliveries = ({ isDark }) => {
         ...it,
         qtte: it.qtte,
         max_qtte: it.qtte,
-      }))
+      })),
     );
   };
 
@@ -86,7 +81,7 @@ const PageDeliveries = ({ isDark }) => {
           return { ...it, qtte: numValue };
         }
         return it;
-      })
+      }),
     );
   };
 
@@ -101,7 +96,7 @@ const PageDeliveries = ({ isDark }) => {
         totalTVA: acc.totalTVA + tva,
       };
     },
-    { totalHT: 0, totalTTC: 0, totalTVA: 0 }
+    { totalHT: 0, totalTTC: 0, totalTVA: 0 },
   );
 
   const handleAddDelivery = async () => {
@@ -174,6 +169,7 @@ const PageDeliveries = ({ isDark }) => {
           </Link>
         </div>
 
+        {/* ✅ Recherche simplifiée - sans button */}
         <div
           className={`rounded-2xl shadow-md p-6 ${isDark ? "bg-[#1e293b]" : "bg-white"}`}
         >
@@ -183,32 +179,18 @@ const PageDeliveries = ({ isDark }) => {
             <Search size={20} />
             Rechercher un Devis Validé
           </h2>
-          <div className="flex flex-col gap-2 lg:flex-row lg:gap-3 md:flex-row md:gap-3 sm:flex-row sm:gap-3">
+          <div className="relative">
+            <Search
+              className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${isDark ? "text-gray-500" : "text-gray-400"}`}
+              size={20}
+            />
             <input
               type="text"
-              placeholder="N de devis ou nom du client..."
+              placeholder="N° de devis ou nom du client..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className={`flex-1 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#094067] focus:border-transparent ${isDark ? "bg-[#0f172a] border border-[#334155] text-gray-200 placeholder-gray-500" : "border border-gray-300 text-gray-800"}`}
+              className={`w-full rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#094067] focus:border-transparent ${isDark ? "bg-[#0f172a] border border-[#334155] text-gray-200 placeholder-gray-500" : "border border-gray-300 text-gray-800"}`}
             />
-            <button
-              onClick={handleSearch}
-              disabled={searching}
-              className="px-6 py-2 bg-[#094067] text-white rounded-xl hover:bg-[#0a5085] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {searching ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Recherche...
-                </>
-              ) : (
-                <>
-                  <Search size={18} />
-                  Rechercher
-                </>
-              )}
-            </button>
           </div>
         </div>
 
@@ -290,9 +272,7 @@ const PageDeliveries = ({ isDark }) => {
                 className={`grid grid-cols-1 lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-2 gap-4 text-sm p-4 rounded-xl ${isDark ? "bg-[#0f172a]" : "bg-gray-50"}`}
               >
                 <div>
-                  <span
-                    className={isDark ? "text-gray-400" : "text-gray-600"}
-                  >
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
                     Client:
                   </span>
                   <span
@@ -302,9 +282,7 @@ const PageDeliveries = ({ isDark }) => {
                   </span>
                 </div>
                 <div>
-                  <span
-                    className={isDark ? "text-gray-400" : "text-gray-600"}
-                  >
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
                     Téléphone:
                   </span>
                   <span
@@ -314,9 +292,7 @@ const PageDeliveries = ({ isDark }) => {
                   </span>
                 </div>
                 <div>
-                  <span
-                    className={isDark ? "text-gray-400" : "text-gray-600"}
-                  >
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
                     Email:
                   </span>
                   <span
@@ -326,9 +302,7 @@ const PageDeliveries = ({ isDark }) => {
                   </span>
                 </div>
                 <div>
-                  <span
-                    className={isDark ? "text-gray-400" : "text-gray-600"}
-                  >
+                  <span className={isDark ? "text-gray-400" : "text-gray-600"}>
                     ICE:
                   </span>
                   <span
@@ -453,6 +427,7 @@ const PageDeliveries = ({ isDark }) => {
               <div className="flex justify-end mt-6">
                 <button
                   onClick={handleAddDelivery}
+                  disabled={submitting}
                   className="flex items-center gap-2 px-8 py-3 bg-[#094067] text-white rounded-xl font-bold hover:bg-[#0a5085] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {submitting ? (
