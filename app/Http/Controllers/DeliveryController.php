@@ -214,6 +214,9 @@ class DeliveryController extends Controller
         })
             ->where("type", "delivery")
             ->where("status", "livré")
+            ->whereDoesntHave('children', function ($query) {
+                $query->where("type", "invoice");
+            })
             ->get();
         return response()->json([
             "status" => true,
@@ -232,7 +235,13 @@ class DeliveryController extends Controller
 
     public function getValidateLiveries()
     {
-        $deliveries = Document::where("type", "delivery")->with(['client', "items.produit"])->where("status", "livré")->get();
+        $deliveries = Document::where("type", "delivery")
+            ->where("status", "livré")
+            ->whereDoesntHave('children', function ($query) {
+                $query->where("type", "invoice");
+            })
+            ->with(['client', "items.produit"])
+            ->get();
         return response()->json([
             'status' => true,
             "deliveries" => $deliveries

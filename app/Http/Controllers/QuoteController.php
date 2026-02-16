@@ -250,6 +250,13 @@ class QuoteController extends Controller
         })
             ->where("type", "quote")
             ->where("status", "validé")
+            ->with([
+                'client',
+                'items' => function ($query) {
+                    $query->where('qtte', '>', 0);
+                },
+                'items.produit'
+            ])
             ->get();
         return response()->json([
             "status" => true,
