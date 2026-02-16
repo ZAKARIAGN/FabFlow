@@ -268,7 +268,20 @@ class QuoteController extends Controller
 
     public function getvalidateQuotes()
     {
-        $quotes = Document::where("type", "quote")->where("status", "validé")->with(['client', 'items.produit'])->get();
+        $quotes = Document::where("type", "quote")
+            ->where("status", "validé")
+            ->whereHas('items', function ($query) {
+                $query->where('qtte', '>', 0);
+            })
+            ->with([
+                'client',
+                'items' => function ($query) {
+                    $query->where('qtte', '>', 0);
+                },
+                'items.produit'
+            ])
+            ->get();
+
         return response()->json([
             'status' => true,
             "quotes" => $quotes

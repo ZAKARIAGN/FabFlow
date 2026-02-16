@@ -59,7 +59,6 @@ class DeliveryController extends Controller
                     throw new \Exception("Cette devis n'est pas validé");
                 }
 
-                // Générer le numéro avec le même shared_id que le devis
                 $numberData = $documentService->generateNumberFromParent("delivery", $quote);
 
                 $delivery = Document::create([
@@ -99,13 +98,18 @@ class DeliveryController extends Controller
                         }
 
                         $qtteToInsert = $userQtte;
+
                         if ($delivery->status === 'livré') {
                             $produit->decrement('stock', $userQtte);
-                            $quoteItem->decrement('qtte', $userQtte);
                         } elseif ($delivery->status === 'annulé') {
                             $produit->increment('stock', $userQtte);
-                            $quoteItem->increment('qtte', $userQtte);
                         }
+                    }
+
+                    if ($delivery->status === 'livré') {
+                        $quoteItem->decrement('qtte', $qtteToInsert);
+                    } elseif ($delivery->status === 'annulé') {
+                        $quoteItem->increment('qtte', $qtteToInsert);
                     }
 
                     $delivery->items()->create([
@@ -115,6 +119,7 @@ class DeliveryController extends Controller
                         'tax_rate' => $quoteItem->tax_rate,
                     ]);
                 }
+
                 return response()->json([
                     'status' => true,
                     'message' => 'BL créé avec succès',

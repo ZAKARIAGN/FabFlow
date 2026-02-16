@@ -112,6 +112,7 @@ class AuthController extends Controller
             'last_name' => $user->last_name,
             'email' => $user->email,
             'role_id' => $user->role_id,
+            'role' => $user->role->roleName,
             'token' => $token,
         ];
 
@@ -130,6 +131,17 @@ class AuthController extends Controller
             'user' => $input,
             'message' => "login successful",
             'redirect_to' => $redirect
+        ], 200);
+    }
+
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Déconnexion réussie'
         ], 200);
     }
 

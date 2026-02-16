@@ -226,13 +226,17 @@ class ClientController extends Controller
         ], 200);
     }
 
-     public function getTopClientsByPaidInvoices()
+    public function getTopClientsByPaidInvoices()
     {
-        $topClients = Client::select('clients.*', DB::raw('SUM(documents.totale) as total_paid'))
+        $topClients = Client::select(
+            'clients.id',
+            'clients.company_name',
+            DB::raw('SUM(documents.totale) as total_paid')
+        )
             ->join('documents', 'clients.id', '=', 'documents.client_id')
             ->where('documents.type', 'invoice')
             ->where('documents.status', 'payée')
-            ->groupBy('clients.id')
+            ->groupBy('clients.id', 'clients.company_name')
             ->orderByDesc('total_paid')
             ->limit(5)
             ->get();
@@ -242,6 +246,7 @@ class ClientController extends Controller
             'clients' => $topClients
         ]);
     }
+
 
 
 }

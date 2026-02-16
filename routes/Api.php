@@ -69,6 +69,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/produits', [ProduitController::class, 'index']);
     Route::get('/invoices-total-paid', [InvoiceController::class, 'getTotalPaidInvoices']);
     Route::get('/clients-top-paid', [ClientController::class, 'getTopClientsByPaidInvoices']);
+    Route::get('/logout', [AuthController::class, 'logout']);
+
 });
 
 
